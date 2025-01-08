@@ -1,0 +1,96 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+    workflow_dispatch:
+
+jobs:
+  client-code-checks:
+    name: Client Code Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Clean and Install
+        run: cd client && npm ci
+      - name: Build
+        run: cd client && npm run build
+      - name: Lint
+        run: cd client && npm run lint
+      - name: Unit tests
+        run: cd client && npm run test:coverage
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v4.0.0
+        with:
+          projectBaseDir: client
+          args: >
+            -Dsonar.organization=ricardo-campos-org
+            -Dsonar.projectKey=ricardo-campos-org_react-typescript-todolist_client
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.typescript.tsconfigPaths=tsconfig.json
+            -Dsonar.sources=src/
+            -Dsonar.exclusions=src/__test__/**
+            -Dsonar.tests=src/__test__/
+            -Dsonar.verbose=false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  java-code-checks:
+    name: Server Code Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Cache SonarQube Cloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Build with Maven
+        run: cd server && ./mvnw --no-transfer-progress clean compile -DskipTests
+
+      - name: Google Checkstyle
+        run: cd server && ./mvnw --no-transfer-progress checkstyle:checkstyle -Dskip.checkstyle=false
+
+      - name: Sonar Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN_SERVER }}
+        run: cd server && ./mvnw -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.projectKey=ricardo-campos-org_react-typescript-todolist_server
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/coverage-reports/merged-test-report/jacoco.xml
+          -Dsonar.exclusions=**/config/**,**/entity/**,**/exception/**,**/filter/**,**/**Builder*,**/RestExceptionEndpoint.*,**/JavaApiApiApplication.*
+
+      - name: All Tests
+        run: cd server && ./mvnw --no-transfer-progress clean verify -P tests --file pom.xml

@@ -1,0 +1,1 @@
+export const TODAYS_TRACKER = 'WHOURS-TRACKER';

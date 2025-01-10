@@ -7,7 +7,9 @@ import {
   getHourMinuteLeftArrayFromMinutes
 } from '../../hours-service';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { saveTodayTracker, loadTodayTracker } from '../../storage-service/storage';
+import { saveTodayTracker, loadTrackerForDate } from '../../storage-service/storage';
+import { getDatOfTheWeek, getDayExtension, getMonthName } from '../../date-service';
+import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 
 function TodayTracker(): JSX.Element {
   const [timeOne, setTimeOne] = useState<string>('');
@@ -20,6 +22,8 @@ function TodayTracker(): JSX.Element {
   const [willCompleteAt, setWillCompleteAt] = useState<string>('00:00');
   const [timeLeft, setTimeLeft] = useState<string>('0h 0m');
   const [extraHours, setExtraHours] = useState<string>('0h 0m');
+  const [dateMessage, setDateMessage] = useState<string>('');
+  const [currentDay, setCurrentDay] = useState<Date>(new Date());
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -99,8 +103,8 @@ function TodayTracker(): JSX.Element {
     setTimeSix('');
   };
 
-  const loadFromStorage = (): void => {
-    const data: TodayTrackerStore | undefined = loadTodayTracker();
+  const loadFromStorage = (theDay: string): void => {
+    const data: TodayTrackerStore | undefined = loadTrackerForDate(theDay);
     if (data) {
       setTimeOne(data.time1);
       setTimeTwo(data.time2);
@@ -113,21 +117,103 @@ function TodayTracker(): JSX.Element {
       setTimeLeft(data.timeLeft);
       setExtraHours(data.extraHours);
     }
+    else {
+      setTimeOne('');
+      setTimeTwo('');
+      setTimeThree('');
+      setTimeFour('');
+      setTimeFive('');
+      setTimeSix('');
+      setTotalWorkedHours('');
+      setWillCompleteAt('');
+      setTimeLeft('');
+      setExtraHours('');
+    }
+  };
+
+  const loadTodayDateMessage = (theDay: Date, formatted: string): void => {
+    const parts: string[] = [];
+    parts.push(getDatOfTheWeek(theDay.getDay()));
+    parts.push(', ');
+    parts.push(getMonthName(theDay.getMonth()));
+    parts.push(' ');
+    parts.push(theDay.getDate().toString());
+    parts.push(getDayExtension(theDay.getDate()));
+    parts.push(', ');
+    parts.push(theDay.getFullYear().toString());
+    parts.push(` (${formatted})`);
+
+    const finalMessage = parts.join('');
+    setDateMessage(finalMessage);
+  };
+
+  const goToDay = (sign: string): void => {
+    let currentDate = new Date(currentDay);
+
+    if (sign === '+') {
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    else if (sign === '-') {
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+    else {
+      currentDate = new Date();
+    }
+
+    setCurrentDay(currentDate);
   };
 
   useEffect(() => {
-    loadFromStorage();
-  }, []);
+    const formatted = `${currentDay.getFullYear()}/${currentDay.getMonth() + 1}/${currentDay.getDate()}`;
+
+    loadFromStorage(formatted);
+    loadTodayDateMessage(currentDay, formatted);
+  }, [currentDay]);
 
   return (
     <>
+      <Row>
+        <Col xs={6}>
+          <h2>{dateMessage}</h2>
+        </Col>
+        <Col xs={6} className="text-end">
+          <Button
+            variant="outline-secondary"
+            type="button"
+            onClick={() => goToDay('-')}
+            className="mx-2"
+          >
+            <ArrowLeft />
+            {' '}
+            Previous day
+          </Button>
+          <Button
+            variant="outline-secondary"
+            type="button"
+            onClick={() => goToDay('')}
+            className="mx-2"
+          >
+            Today
+          </Button>
+          <Button
+            variant="outline-secondary"
+            type="button"
+            onClick={() => goToDay('+')}
+            className="mx-2"
+          >
+            Next day
+            {' '}
+            <ArrowRight />
+          </Button>
+        </Col>
+      </Row>
+
       <Form noValidate validated={true} onSubmit={handleSubmit}>
         <Row>
           <Col xs={6}>
             <TodayInput
               inputId="time1"
               labelText="Starting time"
-              placeholderText="08:00"
               helpText="What time did you start working?"
               globalValue={timeOne}
               setGlobalValue={setTimeOne}
@@ -137,7 +223,6 @@ function TodayTracker(): JSX.Element {
             <TodayInput
               inputId="time2"
               labelText="Stopped for lunch - Lunchtime"
-              placeholderText="12:00"
               helpText="What time did you stop for lunch?"
               globalValue={timeTwo}
               setGlobalValue={setTimeTwo}
@@ -149,7 +234,6 @@ function TodayTracker(): JSX.Element {
             <TodayInput
               inputId="time3"
               labelText="Started after lunch"
-              placeholderText="13:00"
               helpText="What time did you start after lunch?"
               globalValue={timeThree}
               setGlobalValue={setTimeThree}
@@ -159,7 +243,6 @@ function TodayTracker(): JSX.Element {
             <TodayInput
               inputId="time4"
               labelText="Stopped? Quick Break?"
-              placeholderText="17:00"
               helpText="What time did you stop working? Went for a break?"
               globalValue={timeFour}
               setGlobalValue={setTimeFour}
@@ -171,7 +254,6 @@ function TodayTracker(): JSX.Element {
             <TodayInput
               inputId="time5"
               labelText="Joined again?"
-              placeholderText="18:00"
               helpText="What time did you join again?"
               globalValue={timeFive}
               setGlobalValue={setTimeFive}
@@ -181,7 +263,6 @@ function TodayTracker(): JSX.Element {
             <TodayInput
               inputId="time6"
               labelText="Final stop!"
-              placeholderText="22:00"
               helpText="What time did you finally stop?"
               globalValue={timeSix}
               setGlobalValue={setTimeSix}

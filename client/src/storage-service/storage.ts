@@ -10,8 +10,8 @@ function saveTodayTracker(obj: TodayTrackerStore): void {
   localStorage.setItem(`${TODAYS_TRACKER}-${formatTodayDate()}`, JSON.stringify(obj));
 }
 
-function loadTodayTracker(): TodayTrackerStore | undefined {
-  const saved: string | null = localStorage.getItem(`${TODAYS_TRACKER}-${formatTodayDate()}`);
+function loadTrackerForDate(theDay: string): TodayTrackerStore | undefined {
+  const saved: string | null = localStorage.getItem(`${TODAYS_TRACKER}-${theDay}`);
   if (saved) {
     return JSON.parse(saved);
   }
@@ -24,4 +24,4 @@ function clearStorage(): void {
   localStorage.removeItem(TODAYS_TRACKER);
 }
 
-export { saveTodayTracker, clearStorage, loadTodayTracker };
+export { saveTodayTracker, clearStorage, loadTrackerForDate };

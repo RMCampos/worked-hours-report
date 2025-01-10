@@ -5,7 +5,6 @@ import { PencilFill } from 'react-bootstrap-icons';
 interface Props {
   inputId: string;
   labelText: string;
-  placeholderText: string;
   helpText: string;
   globalValue: string;
   setGlobalValue: (inputValue: string) => void;
@@ -44,7 +43,6 @@ function TodayInput(props: Props): JSX.Element {
         <Form.Control
           type="text"
           name={props.inputId}
-          placeholder={props.placeholderText}
           value={props.globalValue}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
             props.setGlobalValue(e.target.value);

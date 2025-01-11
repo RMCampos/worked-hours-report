@@ -1,13 +1,8 @@
 import { TodayTrackerStore } from '../types/todayTrackerStore';
 import { TODAYS_TRACKER } from './constants';
 
-const formatTodayDate = (): string => {
-  const today = new Date();
-  return `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
-};
-
-function saveTodayTracker(obj: TodayTrackerStore): void {
-  localStorage.setItem(`${TODAYS_TRACKER}-${formatTodayDate()}`, JSON.stringify(obj));
+function saveTodayTracker(obj: TodayTrackerStore, theDay: string): void {
+  localStorage.setItem(`${TODAYS_TRACKER}-${theDay}`, JSON.stringify(obj));
 }
 
 /**

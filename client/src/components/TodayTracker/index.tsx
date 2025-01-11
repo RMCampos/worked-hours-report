@@ -91,7 +91,8 @@ function TodayTracker(): React.ReactNode {
       extraHours: extraHoursText
     };
 
-    saveTodayTracker(objToSave);
+    const formattedToSave = `${currentDay.getFullYear()}/${currentDay.getMonth() + 1}/${currentDay.getDate()}`;
+    saveTodayTracker(objToSave, formattedToSave);
   };
 
   const clearInputs = (): void => {

@@ -11,7 +11,7 @@ import { saveTodayTracker, loadTrackerForDate } from '../../storage-service/stor
 import { getDatOfTheWeek, getDayExtension, getMonthName } from '../../date-service';
 import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 
-function TodayTracker(): JSX.Element {
+function TodayTracker(): React.ReactNode {
   const [timeOne, setTimeOne] = useState<string>('');
   const [timeTwo, setTimeTwo] = useState<string>('');
   const [timeThree, setTimeThree] = useState<string>('');

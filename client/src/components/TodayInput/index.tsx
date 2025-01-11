@@ -10,7 +10,7 @@ interface Props {
   setGlobalValue: (inputValue: string) => void;
 }
 
-function TodayInput(props: Props): JSX.Element {
+function TodayInput(props: Props): React.ReactNode {
   const setCurrentTime = (): void => {
     const date = new Date();
     let currentText = '';

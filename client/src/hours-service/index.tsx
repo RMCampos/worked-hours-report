@@ -1,5 +1,8 @@
 /* Private functions */
 const getParsedTime = (inputValue: string): number[] => {
+  if (!inputValue) {
+    return [0, 0];
+  }
   if (inputValue.includes(':')) {
     const timeStr: string[] = inputValue.split(':');
     return [parseInt(timeStr[0]), parseInt(timeStr[1])];

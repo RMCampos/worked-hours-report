@@ -40,3 +40,26 @@ export function getDayExtension(day: number): string {
     default: return 'th';
   }
 }
+
+export function getDaysInMonth(month: number): number {
+  switch (month) {
+    case 1: return 28;
+    case 3:
+    case 5:
+    case 8:
+    case 10: return 30;
+    default: return 31;
+  }
+}
+
+export function createDayArrayForMonthYear(month: number, year: number): string[] {
+  const monthArray: string[] = [];
+  const lastDay: number = getDaysInMonth(month);
+
+  for (let i = 1; i <= lastDay; i++) {
+    const todayFmt = `${year}/${month + 1}/${i}`;
+    monthArray.push(todayFmt);
+  }
+
+  return monthArray;
+}

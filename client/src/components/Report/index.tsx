@@ -10,7 +10,7 @@ import { calculateWorkedHours } from '../../hours-service';
 
 function Report(): React.ReactNode {
   const [selectedMonthId, setSelectedMonthId] = useState<number>(0);
-  const [selectedYearId, setSelectedYearId] = useState<number | undefined>();
+  const [selectedYearId, setSelectedYearId] = useState<number>(2025);
   const [reportData, setReportData] = useState<DailyReport[]>([]);
 
   const loadSelectedPeriod = (): void => {

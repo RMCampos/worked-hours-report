@@ -40,6 +40,17 @@ function Report(): React.ReactNode {
           hourSum += (totalWorkd[0] - 8);
           minuteSum += totalWorkd[1];
         }
+        else {
+          // find the time left
+          let minutesLeft = (8 - totalWorkd[0]) * 60;
+          minutesLeft -= totalWorkd[1];
+
+          while (minutesLeft >= 60) {
+            hourSum -= 1;
+            minutesLeft -= 60;
+          }
+          minuteSum -= minutesLeft;
+        }
 
         // Total worked
         const totalWorkedText = `${totalWorkd[0]}h ${totalWorkd[1]}m`;

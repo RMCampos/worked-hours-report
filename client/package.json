@@ -55,7 +55,7 @@
     ]
   },
   "devDependencies": {
-    "@eslint/compat": "^1.2.4",
+    "@eslint/compat": "^1.2.5",
     "@eslint/eslintrc": "^3.1.0",
     "@eslint/js": "^9.17.0",
     "@stylistic/eslint-plugin": "^2.12.1",

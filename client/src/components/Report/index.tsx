@@ -147,33 +147,33 @@ function Report(): React.ReactNode {
             <tbody>
               {reportData.map((dailyItem: DailyReport) => (
                 <tr key={dailyItem.dayOfMonth}>
-                  <th scope="row">
+                  <td scope="row">
                     {dailyItem.dayOfMonth}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.started1}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.stopped1}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.started2}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.stopped2}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.started3}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.stopped3}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.worked}
-                  </th>
-                  <th>
+                  </td>
+                  <td>
                     {dailyItem.extra}
-                  </th>
+                  </td>
                 </tr>
               ))}
             </tbody>

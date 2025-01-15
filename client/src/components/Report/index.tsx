@@ -50,6 +50,11 @@ function Report(): React.ReactNode {
             minutesLeft -= 60;
           }
           minuteSum -= minutesLeft;
+
+          if (minuteSum <= -60) {
+            hourSum -= 1;
+            minuteSum += 60;
+          }
         }
 
         // Total worked

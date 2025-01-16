@@ -10,6 +10,8 @@ import { TodayTrackerStore } from '../../types/todayTrackerStore';
 import { saveTodayTracker, loadTrackerForDate } from '../../storage-service/storage';
 import { getDatOfTheWeek, getDayExtension, getMonthName } from '../../date-service';
 import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
+import { useTheme } from '../../context/themeContext';
+import TodayTrackerResultText from '../TodayTrackerResultText';
 
 function TodayTracker(): React.ReactNode {
   const [timeOne, setTimeOne] = useState<string>('');
@@ -24,6 +26,7 @@ function TodayTracker(): React.ReactNode {
   const [extraHours, setExtraHours] = useState<string>('0h 0m');
   const [dateMessage, setDateMessage] = useState<string>('');
   const [currentDay, setCurrentDay] = useState<Date>(new Date());
+  const { theme } = useTheme();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -173,144 +176,135 @@ function TodayTracker(): React.ReactNode {
 
   return (
     <>
-      <Row>
-        <Col xs={6}>
-          <h2>{dateMessage}</h2>
-        </Col>
-        <Col xs={6} className="text-end">
-          <Button
-            variant="outline-secondary"
-            type="button"
-            onClick={() => goToDay('-')}
-            className="mx-2"
-          >
-            <ArrowLeft />
-            {' '}
-            Previous day
-          </Button>
-          <Button
-            variant="outline-secondary"
-            type="button"
-            onClick={() => goToDay('')}
-            className="mx-2"
-          >
-            Today
-          </Button>
-          <Button
-            variant="outline-secondary"
-            type="button"
-            onClick={() => goToDay('+')}
-            className="mx-2"
-          >
-            Next day
-            {' '}
-            <ArrowRight />
-          </Button>
-        </Col>
-      </Row>
-
-      <Form noValidate validated={true} onSubmit={handleSubmit}>
+      <div className={`card p-4 shadow-sm my-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
+        <h1 className={`my-4 ${theme === 'light' ? 'text-dark' : 'text-light'}`}>Worked hours</h1>
         <Row>
           <Col xs={6}>
-            <TodayInput
-              inputId="time1"
-              labelText="Starting time"
-              helpText="What time did you start working?"
-              globalValue={timeOne}
-              setGlobalValue={setTimeOne}
-            />
+            <h4 className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>{dateMessage}</h4>
           </Col>
-          <Col xs={6}>
-            <TodayInput
-              inputId="time2"
-              labelText="Stopped for lunch - Lunchtime"
-              helpText="What time did you stop for lunch?"
-              globalValue={timeTwo}
-              setGlobalValue={setTimeTwo}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col xs={6}>
-            <TodayInput
-              inputId="time3"
-              labelText="Started after lunch"
-              helpText="What time did you start after lunch?"
-              globalValue={timeThree}
-              setGlobalValue={setTimeThree}
-            />
-          </Col>
-          <Col xs={6}>
-            <TodayInput
-              inputId="time4"
-              labelText="Stopped? Quick Break?"
-              helpText="What time did you stop working? Went for a break?"
-              globalValue={timeFour}
-              setGlobalValue={setTimeFour}
-            />
-          </Col>
-        </Row>
-        <Row>
-          <Col xs={6}>
-            <TodayInput
-              inputId="time5"
-              labelText="Joined again?"
-              helpText="What time did you join again?"
-              globalValue={timeFive}
-              setGlobalValue={setTimeFive}
-            />
-          </Col>
-          <Col xs={6}>
-            <TodayInput
-              inputId="time6"
-              labelText="Final stop!"
-              helpText="What time did you finally stop?"
-              globalValue={timeSix}
-              setGlobalValue={setTimeSix}
-            />
+          <Col xs={6} className="text-end">
+            <Button
+              variant="outline-secondary"
+              type="button"
+              onClick={() => goToDay('-')}
+              className="mx-2"
+            >
+              <ArrowLeft />
+              {' '}
+              Previous day
+            </Button>
+            <Button
+              variant="outline-secondary"
+              type="button"
+              onClick={() => goToDay('')}
+              className="mx-2"
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline-secondary"
+              type="button"
+              onClick={() => goToDay('+')}
+              className="mx-2"
+            >
+              Next day
+              {' '}
+              <ArrowRight />
+            </Button>
           </Col>
         </Row>
 
-        <Button
-          variant="primary"
-          type="submit"
-        >
-          Calculate
-        </Button>
-        <Button
-          variant="outline-secondary"
-          type="button"
-          onClick={clearInputs}
-          className="mx-2"
-        >
-          Clear all
-        </Button>
-      </Form>
+        <Form noValidate validated={true} onSubmit={handleSubmit}>
+          <Row>
+            <Col xs={12} md={6}>
+              <TodayInput
+                inputId="time1"
+                labelText="Starting time"
+                helpText="What time did you start working?"
+                globalValue={timeOne}
+                setGlobalValue={setTimeOne}
+              />
+            </Col>
+            <Col xs={12} md={6}>
+              <TodayInput
+                inputId="time2"
+                labelText="Stopped for lunch - Lunchtime"
+                helpText="What time did you stop for lunch?"
+                globalValue={timeTwo}
+                setGlobalValue={setTimeTwo}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12} md={6}>
+              <TodayInput
+                inputId="time3"
+                labelText="Started after lunch"
+                helpText="What time did you start after lunch?"
+                globalValue={timeThree}
+                setGlobalValue={setTimeThree}
+              />
+            </Col>
+            <Col xs={12} md={6}>
+              <TodayInput
+                inputId="time4"
+                labelText="Stopped? Quick Break?"
+                helpText="What time did you stop working? Went for a break?"
+                globalValue={timeFour}
+                setGlobalValue={setTimeFour}
+              />
+            </Col>
+          </Row>
+          <Row>
+            <Col xs={12} md={6}>
+              <TodayInput
+                inputId="time5"
+                labelText="Joined again?"
+                helpText="What time did you join again?"
+                globalValue={timeFive}
+                setGlobalValue={setTimeFive}
+              />
+            </Col>
+            <Col xs={12} md={6}>
+              <TodayInput
+                inputId="time6"
+                labelText="Final stop!"
+                helpText="What time did you finally stop?"
+                globalValue={timeSix}
+                setGlobalValue={setTimeSix}
+              />
+            </Col>
+          </Row>
 
-      <Row className="mt-2">
-        <Col xs={12}>
-          <h3>
-            Total worked:
-            {' '}
-            {totalWorkedHours}
-          </h3>
-          <h3>
-            You will complete 8 hours at:
-            {' '}
-            {willCompleteAt}
-          </h3>
-          <h3>
-            Time left:
-            {' '}
-            {timeLeft}
-          </h3>
-          <h3>
-            Extra:
-            {' '}
-            {extraHours}
-          </h3>
-        </Col>
-      </Row>
+          <div className="text-end">
+            <Button
+              variant="primary"
+              type="submit"
+            >
+              Calculate
+            </Button>
+            <Button
+              variant="outline-secondary"
+              type="button"
+              onClick={clearInputs}
+              className="mx-2"
+            >
+              Clear all
+            </Button>
+          </div>
+        </Form>
+      </div>
+
+      <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
+        <Row className="mt-2">
+          <Col xs={12}>
+            <TodayTrackerResultText text={`Total worked: ${totalWorkedHours}`} />
+            <TodayTrackerResultText text={`You will complete 8 hours at: ${willCompleteAt}`} />
+            <TodayTrackerResultText text={`Time left: ${timeLeft}`} />
+            <TodayTrackerResultText text={`Extra: ${extraHours}`} />
+          </Col>
+        </Row>
+      </div>
     </>
   );
 }

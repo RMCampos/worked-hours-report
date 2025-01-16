@@ -1,5 +1,5 @@
 import { TodayTrackerStore } from '../types/todayTrackerStore';
-import { TODAYS_TRACKER } from './constants';
+import { TODAYS_TRACKER, CURRENT_THEME } from './constants';
 
 function saveTodayTracker(obj: TodayTrackerStore, theDay: string): void {
   localStorage.setItem(`${TODAYS_TRACKER}-${theDay}`, JSON.stringify(obj));
@@ -22,6 +22,15 @@ function loadTrackerForDate(theDay: string): TodayTrackerStore | undefined {
  */
 function clearStorage(): void {
   localStorage.removeItem(TODAYS_TRACKER);
+  localStorage.removeItem(CURRENT_THEME);
 }
 
-export { saveTodayTracker, clearStorage, loadTrackerForDate };
+function saveTheme(theme: string): void {
+  localStorage.setItem(CURRENT_THEME, theme);
+}
+
+function getTheme(): string | null {
+  return localStorage.getItem(CURRENT_THEME);
+}
+
+export { saveTodayTracker, clearStorage, loadTrackerForDate, saveTheme, getTheme };

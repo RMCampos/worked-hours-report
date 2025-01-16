@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, InputGroup } from 'react-bootstrap';
-import { PencilFill } from 'react-bootstrap-icons';
+import { useTheme } from '../../context/themeContext';
 
 interface Props {
   inputId: string;
@@ -11,6 +11,8 @@ interface Props {
 }
 
 function TodayInput(props: Props): React.ReactNode {
+  const { theme } = useTheme();
+
   const setCurrentTime = (): void => {
     const date = new Date();
     let currentText = '';
@@ -35,11 +37,9 @@ function TodayInput(props: Props): React.ReactNode {
 
   return (
     <Form.Group className="mb-3" controlId={props.inputId}>
-      <Form.Label>{props.labelText}</Form.Label>
-      <InputGroup className="mb-3">
-        <InputGroup.Text onClick={() => setCurrentTime()}>
-          <PencilFill />
-        </InputGroup.Text>
+      <Form.Label className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>{props.labelText}</Form.Label>
+      <InputGroup className="">
+        <InputGroup.Text onClick={() => setCurrentTime()}>&#x1F550;</InputGroup.Text>
         <Form.Control
           type="text"
           name={props.inputId}
@@ -49,7 +49,7 @@ function TodayInput(props: Props): React.ReactNode {
           }}
         />
       </InputGroup>
-      <Form.Text muted>
+      <Form.Text className={`${theme === 'light' ? 'text-muted' : 'text-dark-muted'}`}>
         {props.helpText}
       </Form.Text>
     </Form.Group>

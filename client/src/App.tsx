@@ -2,6 +2,8 @@ import React from 'react';
 import { Container } from 'react-bootstrap';
 import TodayTracker from './components/TodayTracker';
 import Report from './components/Report';
+import DarkButton from './components/DarkButton';
+import { useTheme } from './context/themeContext';
 import './styles/custom.scss';
 
 /**
@@ -12,12 +14,13 @@ import './styles/custom.scss';
  * @returns {React.ReactNode} The rendered component.
  */
 function App(): React.ReactNode {
+  const { theme } = useTheme();
+
   return (
-    <Container className="body-light">
-      <h1>Worked hours calculator</h1>
+    <Container className={`text-bg-${theme}`}>
       <TodayTracker />
-      <hr />
       <Report />
+      <DarkButton />
     </Container>
   );
 };

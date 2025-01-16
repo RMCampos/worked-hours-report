@@ -7,11 +7,13 @@ import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
 import { loadTrackerForDate } from '../../storage-service/storage';
 import { calculateWorkedHours } from '../../hours-service';
+import { useTheme } from '../../context/themeContext';
 
 function Report(): React.ReactNode {
   const [selectedMonthId, setSelectedMonthId] = useState<number>(0);
   const [selectedYearId, setSelectedYearId] = useState<number>(2025);
   const [reportData, setReportData] = useState<DailyReport[]>([]);
+  const { theme } = useTheme();
 
   const loadSelectedPeriod = (): void => {
     if (isNaN(selectedMonthId) || !selectedYearId) {
@@ -84,10 +86,10 @@ function Report(): React.ReactNode {
   }, [reportData]);
 
   return (
-    <>
-      <h1>Monthly Report</h1>
+    <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
+      <h1 className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>Monthly Report</h1>
 
-      <span>Period:</span>
+      <span className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>Period:</span>
       <Row>
         <Col xs={4}>
           <Form.Select
@@ -196,7 +198,7 @@ function Report(): React.ReactNode {
           </Table>
         </Col>
       </Row>
-    </>
+    </div>
   );
 }
 

@@ -15,11 +15,19 @@ function Report(): React.ReactNode {
   const [reportData, setReportData] = useState<DailyReport[]>([]);
   const { theme } = useTheme();
 
+  const loadCurrentPeriod = (): void => {
+    const date = new Date();
+    console.log('date.getMonth()!', date.getMonth());
+    setSelectedMonthId(date.getMonth());
+    setSelectedYearId(date.getFullYear());
+  };
+
   const loadSelectedPeriod = (): void => {
     if (isNaN(selectedMonthId) || !selectedYearId) {
       return;
     }
     console.log('Go!');
+    console.log('selectedMonthId!', selectedMonthId);
 
     const datesToSearch = createDayArrayForMonthYear(selectedMonthId, selectedYearId);
     const reportDataToSet: DailyReport[] = [];
@@ -87,8 +95,8 @@ function Report(): React.ReactNode {
   };
 
   useEffect(() => {
-    //
-  }, [reportData]);
+    loadSelectedPeriod();
+  }, [selectedMonthId, selectedYearId]);
 
   return (
     <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
@@ -145,6 +153,7 @@ function Report(): React.ReactNode {
             variant="secondary"
             type="button"
             className="ms-2"
+            onClick={loadCurrentPeriod}
           >
             Load current
           </Button>

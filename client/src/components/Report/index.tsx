@@ -143,16 +143,9 @@ function Report(): React.ReactNode {
         </Col>
         <Col xs={4}>
           <Button
-            variant="primary"
+            variant="outline-secondary"
             type="button"
-            onClick={loadSelectedPeriod}
-          >
-            Load
-          </Button>
-          <Button
-            variant="secondary"
-            type="button"
-            className="ms-2"
+            className="ms-2 w-100"
             onClick={loadCurrentPeriod}
           >
             Load current

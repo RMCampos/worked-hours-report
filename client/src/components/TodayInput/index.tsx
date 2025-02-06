@@ -16,7 +16,7 @@ function TodayInput(props: Props): React.ReactNode {
   const setCurrentTime = (): void => {
     const date = new Date();
     let currentText = '';
-    if (date.getHours() < 9) {
+    if (date.getHours() < 10) {
       currentText += `0${date.getHours()}`;
     }
     else {

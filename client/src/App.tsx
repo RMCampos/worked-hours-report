@@ -17,7 +17,7 @@ function App(): React.ReactNode {
   const { theme } = useTheme();
 
   return (
-    <Container className={`text-bg-${theme}`}>
+    <Container fluid className={`text-bg-${theme}`}>
       <TodayTracker />
       <Report />
       <DarkButton />

@@ -1,2 +1,3 @@
 export const TODAYS_TRACKER = 'WHOURS-TRACKER';
 export const CURRENT_THEME = 'WHOURS-THEME';
+export const PERIOD_AMOUNT = 'WHOURS-AMOUNT';

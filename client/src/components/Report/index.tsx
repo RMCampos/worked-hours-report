@@ -2,12 +2,13 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Button, Col, Form, Row, Table } from 'react-bootstrap';
 import { months, years } from './data';
 import { IdAndValue } from '../../types/IdAndValue';
-import { createDayArrayForMonthYear } from '../../date-service';
+import { createDayArrayForMonthYear, getLastPeriod } from '../../date-service';
 import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { loadTrackerForDate } from '../../storage-service/storage';
-import { calculateWorkedHours } from '../../hours-service';
+import { loadAmountForPeriod, loadTrackerForDate, saveAmountForPeriod } from '../../storage-service/storage';
+import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
+import { PeriodAmount } from '../../types/periodAmount';
 
 function Report(): React.ReactNode {
   const [selectedMonthId, setSelectedMonthId] = useState<number>(0);
@@ -17,7 +18,6 @@ function Report(): React.ReactNode {
 
   const loadCurrentPeriod = (): void => {
     const date = new Date();
-    console.log('date.getMonth()!', date.getMonth());
     setSelectedMonthId(date.getMonth());
     setSelectedYearId(date.getFullYear());
   };
@@ -26,13 +26,14 @@ function Report(): React.ReactNode {
     if (isNaN(selectedMonthId) || !selectedYearId) {
       return;
     }
-    console.log('Go!');
-    console.log('selectedMonthId!', selectedMonthId);
+
+    // Get amount from last month
+    const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
+    let previousAmountMinutes = loadAmountForPeriod(lastPeriod);
+    console.log('previousAmountMinutes', previousAmountMinutes);
 
     const datesToSearch = createDayArrayForMonthYear(selectedMonthId, selectedYearId);
     const reportDataToSet: DailyReport[] = [];
-    let hourSum = 0;
-    let minuteSum = 0;
 
     datesToSearch.forEach((theDay: string) => {
       const reportForDate: TodayTrackerStore | undefined = loadTrackerForDate(theDay);
@@ -47,29 +48,16 @@ function Report(): React.ReactNode {
         ]);
 
         if (totalWorkd[0] >= 8) {
-          hourSum += (totalWorkd[0] - 8);
-          minuteSum += totalWorkd[1];
+          const hourToAdd = (totalWorkd[0] - 8);
+          const minutesToAdd = totalWorkd[1];
+
+          previousAmountMinutes += (hourToAdd * 60) + minutesToAdd;
         }
         else {
           // find the time left
-          let minutesLeft = (8 - totalWorkd[0]) * 60;
-          minutesLeft -= totalWorkd[1];
-
-          while (minutesLeft >= 60) {
-            hourSum -= 1;
-            minutesLeft -= 60;
-          }
-          minuteSum -= minutesLeft;
-
-          if (minuteSum <= -60) {
-            hourSum -= 1;
-            minuteSum += 60;
-          }
-        }
-
-        if (minuteSum >= 60) {
-          hourSum += 1;
-          minuteSum -= 60;
+          const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorkd[1] + (totalWorkd[0] * 60));
+          const minutesLeft = leftArray[1] + (leftArray[0] * 60);
+          previousAmountMinutes -= minutesLeft;
         }
 
         // Total worked
@@ -84,7 +72,7 @@ function Report(): React.ReactNode {
           started3: reportForDate.time5,
           stopped3: reportForDate.time6,
           worked: totalWorkedText,
-          extra: `${hourSum}h ${minuteSum}m`
+          extra: formatMinutes(previousAmountMinutes)
         });
       }
     });
@@ -92,6 +80,14 @@ function Report(): React.ReactNode {
     if (reportDataToSet) {
       setReportData(reportDataToSet);
     }
+
+    // Save final amount for the period
+    const periodAmount: PeriodAmount = {
+      period: `${selectedYearId}/${selectedMonthId}`,
+      amountOfMinutes: previousAmountMinutes
+    };
+
+    saveAmountForPeriod(periodAmount);
   };
 
   useEffect(() => {

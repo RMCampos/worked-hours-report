@@ -28,6 +28,11 @@ const sumTimes = (start: number[], end: number[]) => {
 };
 
 /* Public function */
+/**
+ * Get the hours and minutes left to complete the 8 hours of work.
+ * @param {number} totalMinutes The total minutes worked.
+ * @returns {number[]} The hours and minutes left to complete the 8 hours of work.
+ */
 function getHourMinuteLeftArrayFromMinutes(totalMinutes: number): number[] {
   let minutesLeft = 8 * 60 - totalMinutes;
   let hours = 0;
@@ -38,6 +43,11 @@ function getHourMinuteLeftArrayFromMinutes(totalMinutes: number): number[] {
   return [hours, minutesLeft];
 };
 
+/**
+ * Calculate the total worked hours and minutes.
+ * @param {string[]} values The values to be calculated.
+ * @returns {number[]} The total worked hours and minutes.
+ */
 function calculateWorkedHours(values: string[]): number[] {
   let totalWorkedHours = 0;
   let totalWorkedMinutes = 0;
@@ -59,7 +69,12 @@ function calculateWorkedHours(values: string[]): number[] {
   return [totalWorkedHours, totalWorkedMinutes];
 }
 
-const calculateCompletionTime = (totalWorked: number[]): string[] => {
+/**
+ * Calculate the time when the user will complete the 8 hours of work.
+ * @param {number[]} totalWorked The total worked hours and minutes.
+ * @returns {string[]} The time when the user will complete the 8 hours of work.
+ */
+function calculateCompletionTime(totalWorked: number[]): string[] {
   const totalMinutes = totalWorked[1] + (totalWorked[0] * 60);
 
   if (totalMinutes >= 8 * 60) {
@@ -83,4 +98,33 @@ const calculateCompletionTime = (totalWorked: number[]): string[] => {
   return [currentH.toString(), currentM.toString()];
 };
 
-export { calculateWorkedHours, calculateCompletionTime, getHourMinuteLeftArrayFromMinutes };
+/**
+ * Format minutes to hours and minutes.
+ * @param {number} formatMinutes minutes to be formatted.
+ * @returns {string} The formatted string.
+ */
+function formatMinutes(formatMinutes: number): string {
+  let hours = 0;
+  const isNegative = formatMinutes < 0;
+
+  let newMinutes = formatMinutes;
+  if (isNegative) {
+    newMinutes = Math.abs(formatMinutes);
+  }
+  while (newMinutes >= 60) {
+    hours += 1;
+    newMinutes -= 60;
+  }
+  let formatted = `${hours}h ${newMinutes}m`;
+  if (isNegative) {
+    formatted = `-${formatted}`;
+  }
+  return formatted;
+};
+
+export {
+  calculateWorkedHours,
+  calculateCompletionTime,
+  getHourMinuteLeftArrayFromMinutes,
+  formatMinutes
+};

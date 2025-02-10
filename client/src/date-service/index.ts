@@ -1,4 +1,9 @@
-export function getDatOfTheWeek(day: number): string {
+/**
+ * Get the day of the week.
+ * @param {number} day The day to be used.
+ * @returns {string} The day of the week.
+ */
+export function getDayOfTheWeek(day: number): string {
   switch (day) {
     case 0: return 'Sunday';
     case 1: return 'Monday';
@@ -11,6 +16,11 @@ export function getDatOfTheWeek(day: number): string {
   }
 }
 
+/**
+ * Get the month name.
+ * @param {number} month The month to be used.
+ * @returns {string} The month name.
+ */
 export function getMonthName(month: number): string {
   switch (month) {
     case 0: return 'January';
@@ -29,6 +39,11 @@ export function getMonthName(month: number): string {
   }
 }
 
+/**
+ * Get the day extension.
+ * @param {number} day The day to be used.
+ * @returns {string} The day extension.
+ */
 export function getDayExtension(day: number): string {
   switch (day) {
     case 1:
@@ -41,6 +56,11 @@ export function getDayExtension(day: number): string {
   }
 }
 
+/**
+ * Get the amount of days in a month.
+ * @param {number} month The month to be used.
+ * @returns {number} The amount of days in the month.
+ */
 export function getDaysInMonth(month: number): number {
   switch (month) {
     case 1: return 28;
@@ -52,6 +72,12 @@ export function getDaysInMonth(month: number): number {
   }
 }
 
+/**
+ * Create an array of days for the given month and year.
+ * @param {number} month The month to be used.
+ * @param {number} year The year to be used.
+ * @returns {string[]} The array of days.
+ */
 export function createDayArrayForMonthYear(month: number, year: number): string[] {
   const monthArray: string[] = [];
   const lastDay: number = getDaysInMonth(month);
@@ -62,4 +88,20 @@ export function createDayArrayForMonthYear(month: number, year: number): string[
   }
 
   return monthArray;
+}
+
+/**
+ * Get the last period based on current month-1 and year.
+ * @param {number} selectedMonthId The selected month id.
+ * @param {number} selectedYearId The selected year id.
+ * @returns {string} The last period.
+ */
+export function getLastPeriod(selectedMonthId: number, selectedYearId: number): string {
+  let lastMonth = selectedMonthId - 1;
+  let lastYear = selectedYearId;
+  if (selectedMonthId === 0) {
+    lastMonth = 11;
+    lastYear = selectedYearId - 1;
+  }
+  return `${lastYear}/${lastMonth}`;
 }

@@ -8,7 +8,7 @@ import {
 } from '../../hours-service';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
 import { saveTodayTracker, loadTrackerForDate } from '../../storage-service/storage';
-import { getDatOfTheWeek, getDayExtension, getMonthName } from '../../date-service';
+import { getDayOfTheWeek, getDayExtension, getMonthName } from '../../date-service';
 import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import { useTheme } from '../../context/themeContext';
 import TodayTrackerResultText from '../TodayTrackerResultText';
@@ -137,7 +137,7 @@ function TodayTracker(): React.ReactNode {
 
   const loadTodayDateMessage = (theDay: Date, formatted: string): void => {
     const parts: string[] = [];
-    parts.push(getDatOfTheWeek(theDay.getDay()));
+    parts.push(getDayOfTheWeek(theDay.getDay()));
     parts.push(', ');
     parts.push(getMonthName(theDay.getMonth()));
     parts.push(' ');

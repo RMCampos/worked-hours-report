@@ -11,18 +11,15 @@
 
 ## 📝 About the Project
 
-Here...
+This is a very simple app to manage and track daily worked hours. All the data will be stored
+on the browser (local storage). 
 
 ## ✨ Features
 
 - Current features
-  - Create and manage TODO items
-  - Create and manage Notes
-  - Search by any matching text
-  - A key feature is that this tool is super simple, but effective.
-- Upcoming features
-  - `#tag` a task or note
-  - Improved search filters
+  - Track worked hours
+  - Track extra hours
+  - Click in the clock icon on the input to get the current time
 
 ## 🚀 Tech Stack
 

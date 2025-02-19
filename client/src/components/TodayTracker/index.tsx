@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
+import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import TodayInput from '../TodayInput';
 import {
   calculateWorkedHours,
@@ -9,9 +10,9 @@ import {
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
 import { saveTodayTracker, loadTrackerForDate } from '../../storage-service/storage';
 import { getDayOfTheWeek, getDayExtension, getMonthName } from '../../date-service';
-import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import { useTheme } from '../../context/themeContext';
 import TodayTrackerResultText from '../TodayTrackerResultText';
+import { EMPTY_HOUR_MINUTE } from '../../constants/appDefinitions';
 
 function TodayTracker(): React.ReactNode {
   const [timeOne, setTimeOne] = useState<string>('');
@@ -20,10 +21,10 @@ function TodayTracker(): React.ReactNode {
   const [timeFour, setTimeFour] = useState<string>('');
   const [timeFive, setTimeFive] = useState<string>('');
   const [timeSix, setTimeSix] = useState<string>('');
-  const [totalWorkedHours, setTotalWorkedHours] = useState<string>('0h 0m');
+  const [totalWorkedHours, setTotalWorkedHours] = useState<string>(EMPTY_HOUR_MINUTE);
   const [willCompleteAt, setWillCompleteAt] = useState<string>('00:00');
-  const [timeLeft, setTimeLeft] = useState<string>('0h 0m');
-  const [extraHours, setExtraHours] = useState<string>('0h 0m');
+  const [timeLeft, setTimeLeft] = useState<string>(EMPTY_HOUR_MINUTE);
+  const [extraHours, setExtraHours] = useState<string>(EMPTY_HOUR_MINUTE);
   const [dateMessage, setDateMessage] = useState<string>('');
   const [currentDay, setCurrentDay] = useState<Date>(new Date());
   const { theme } = useTheme();
@@ -52,32 +53,32 @@ function TodayTracker(): React.ReactNode {
       timeValues.push(timeSix);
     }
 
-    const totalWorkd: number[] = calculateWorkedHours(timeValues);
+    const totalWorked: number[] = calculateWorkedHours(timeValues);
 
     // Total worked
-    const totalWorkedText = `${totalWorkd[0]}h ${totalWorkd[1]}m`;
+    const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
     setTotalWorkedHours(totalWorkedText);
 
     // Completion time
-    const completionTimeArray = calculateCompletionTime(totalWorkd);
+    const completionTimeArray = calculateCompletionTime(totalWorked);
     const willCompleteAtText = completionTimeArray.length === 1
       ? completionTimeArray[0]
       : `${completionTimeArray[0]}:${completionTimeArray[1]}`;
     setWillCompleteAt(willCompleteAtText);
 
     // TimeLeft
-    const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorkd[1] + (totalWorkd[0] * 60));
+    const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorked[1] + (totalWorked[0] * 60));
     const leftH = leftArray[0];
     const leftM = leftArray[1];
     const timeLeftText = leftArray[0] === 0 && leftArray[1] <= 0
-      ? '0h 0m'
+      ? EMPTY_HOUR_MINUTE
       : `${leftH}h ${leftM}m`;
     setTimeLeft(timeLeftText);
 
     // Extra hours
-    let extraHoursText = 'Extra: 0h 0m';
-    if (totalWorkd[0] >= 8 && totalWorkd[1]) {
-      extraHoursText = `Extra: ${totalWorkd[0] - 8}h ${totalWorkd[1]}m`;
+    let extraHoursText = `Extra: ${EMPTY_HOUR_MINUTE}`;
+    if (totalWorked[0] >= 8 && totalWorked[1]) {
+      extraHoursText = `Extra: ${totalWorked[0] - 8}h ${totalWorked[1]}m`;
     }
     setExtraHours(extraHoursText);
 
@@ -281,7 +282,7 @@ function TodayTracker(): React.ReactNode {
               variant="primary"
               type="submit"
             >
-              Calculate
+              Calculate and save
             </Button>
             <Button
               variant="outline-secondary"
@@ -289,7 +290,7 @@ function TodayTracker(): React.ReactNode {
               onClick={clearInputs}
               className="mx-2"
             >
-              Clear all
+              Clear form
             </Button>
           </div>
         </Form>

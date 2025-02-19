@@ -95,6 +95,9 @@ function calculateCompletionTime(totalWorked: number[]): string[] {
   if (currentM < 10) {
     return [currentH.toString(), `0${currentM}`];
   }
+  if (currentH >= 24) {
+    currentH -= 24;
+  }
   return [currentH.toString(), currentM.toString()];
 };
 

@@ -29,7 +29,6 @@ function DarkButton(): React.ReactNode {
 
   const localSavedTheme = (): void => {
     const savedTheme = getTheme();
-    console.log('savedTheme', savedTheme);
     if (savedTheme && savedTheme !== theme) {
       setTheme(savedTheme);
     }

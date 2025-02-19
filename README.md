@@ -21,6 +21,17 @@ on the browser (local storage).
   - Track extra hours
   - Click in the clock icon on the input to get the current time
 
+- Features to be added
+  - Select or input a past date to fix that day data
+  - Improve total worked card with better UI
+  - Replace Month and Year selection by a Year and Month date picker in one component
+  - Make start and stop time a single component
+  - Make the start and stop component smart (dynamically add or remove)
+  - Add auto-saving feature (currently user need to click calculate to save)
+  - Create a management card, allowing to export all saved data to CSV and JSON
+  - In the management card allow the user to clear all the data
+  - In the management card allow users to import from CSV perhaps?
+
 ## 🚀 Tech Stack
 
 - **Frontend:** React, Typescript, Vite, Bootstrap Components, Bootstrap Icons

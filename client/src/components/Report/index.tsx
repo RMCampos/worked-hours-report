@@ -30,7 +30,6 @@ function Report(): React.ReactNode {
     // Get amount from last month
     const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
     let previousAmountMinutes = loadAmountForPeriod(lastPeriod);
-    console.log('previousAmountMinutes', previousAmountMinutes);
 
     const datesToSearch = createDayArrayForMonthYear(selectedMonthId, selectedYearId);
     const reportDataToSet: DailyReport[] = [];
@@ -38,7 +37,7 @@ function Report(): React.ReactNode {
     datesToSearch.forEach((theDay: string) => {
       const reportForDate: TodayTrackerStore | undefined = loadTrackerForDate(theDay);
       if (reportForDate) {
-        const totalWorkd: number[] = calculateWorkedHours([
+        const totalWorked: number[] = calculateWorkedHours([
           reportForDate.time1,
           reportForDate.time2,
           reportForDate.time3,
@@ -47,21 +46,21 @@ function Report(): React.ReactNode {
           reportForDate.time6
         ]);
 
-        if (totalWorkd[0] >= 8) {
-          const hourToAdd = (totalWorkd[0] - 8);
-          const minutesToAdd = totalWorkd[1];
+        if (totalWorked[0] >= 8) {
+          const hourToAdd = (totalWorked[0] - 8);
+          const minutesToAdd = totalWorked[1];
 
           previousAmountMinutes += (hourToAdd * 60) + minutesToAdd;
         }
         else {
           // find the time left
-          const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorkd[1] + (totalWorkd[0] * 60));
+          const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorked[1] + (totalWorked[0] * 60));
           const minutesLeft = leftArray[1] + (leftArray[0] * 60);
           previousAmountMinutes -= minutesLeft;
         }
 
         // Total worked
-        const totalWorkedText = `${totalWorkd[0]}h ${totalWorkd[1]}m`;
+        const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
 
         reportDataToSet.push({
           dayOfMonth: theDay,
@@ -141,10 +140,18 @@ function Report(): React.ReactNode {
           <Button
             variant="outline-secondary"
             type="button"
-            className="ms-2 w-100"
+            className="ms-2"
             onClick={loadCurrentPeriod}
           >
             Load current
+          </Button>
+          <Button
+            variant="outline-secondary"
+            type="button"
+            className="ms-2"
+            onClick={loadSelectedPeriod}
+          >
+            Reload
           </Button>
         </Col>
       </Row>

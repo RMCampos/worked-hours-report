@@ -219,7 +219,7 @@ function TodayTracker(): React.ReactNode {
           </Col>
         </Row>
 
-        <Form noValidate validated={true} onSubmit={handleSubmit}  className="mt-4">
+        <Form noValidate validated={true} onSubmit={handleSubmit} className="mt-4">
           <Row>
             <Col xs={12} md={6}>
               <TodayInput

@@ -13,6 +13,7 @@ import { getDayOfTheWeek, getDayExtension, getMonthName } from '../../date-servi
 import { useTheme } from '../../context/themeContext';
 import TodayTrackerResultText from '../TodayTrackerResultText';
 import { EMPTY_HOUR_MINUTE } from '../../constants/appDefinitions';
+import './styles.css';
 
 function TodayTracker(): React.ReactNode {
   const [timeOne, setTimeOne] = useState<string>('');
@@ -27,6 +28,7 @@ function TodayTracker(): React.ReactNode {
   const [extraHours, setExtraHours] = useState<string>(EMPTY_HOUR_MINUTE);
   const [dateMessage, setDateMessage] = useState<string>('');
   const [currentDay, setCurrentDay] = useState<Date>(new Date());
+  const [displayDaySummary, setDisplayDaySummary] = useState<boolean>(false);
   const { theme } = useTheme();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
@@ -97,6 +99,7 @@ function TodayTracker(): React.ReactNode {
 
     const formattedToSave = `${currentDay.getFullYear()}/${currentDay.getMonth() + 1}/${currentDay.getDate()}`;
     saveTodayTracker(objToSave, formattedToSave);
+    setDisplayDaySummary(true);
   };
 
   const clearInputs = (): void => {
@@ -106,6 +109,7 @@ function TodayTracker(): React.ReactNode {
     setTimeFour('');
     setTimeFive('');
     setTimeSix('');
+    setDisplayDaySummary(false);
   };
 
   const loadFromStorage = (theDay: string): void => {
@@ -178,17 +182,17 @@ function TodayTracker(): React.ReactNode {
   return (
     <>
       <div className={`card p-4 shadow-sm my-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
-        <h1 className={`my-4 ${theme === 'light' ? 'text-dark' : 'text-light'}`}>Worked hours</h1>
+        <h1 className={`my-4 ${theme === 'light' ? 'text-dark' : 'text-light'}`}>WorkedHours</h1>
         <Row>
-          <Col xs={6}>
-            <h4 className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>{dateMessage}</h4>
+          <Col xs={12} md={6} className="text-center">
+            <h4 className={`smart-title ${theme === 'light' ? 'text-dark' : 'text-light'}`}>{dateMessage}</h4>
           </Col>
-          <Col xs={6} className="text-end">
+          <Col xs={12} md={6} className="text-center">
             <Button
               variant="outline-secondary"
               type="button"
               onClick={() => goToDay('-')}
-              className="mx-2"
+              className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             >
               <ArrowLeft />
               {' '}
@@ -198,7 +202,7 @@ function TodayTracker(): React.ReactNode {
               variant="outline-secondary"
               type="button"
               onClick={() => goToDay('')}
-              className="mx-2"
+              className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             >
               Today
             </Button>
@@ -206,7 +210,7 @@ function TodayTracker(): React.ReactNode {
               variant="outline-secondary"
               type="button"
               onClick={() => goToDay('+')}
-              className="mx-2"
+              className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             >
               Next day
               {' '}
@@ -215,7 +219,7 @@ function TodayTracker(): React.ReactNode {
           </Col>
         </Row>
 
-        <Form noValidate validated={true} onSubmit={handleSubmit}>
+        <Form noValidate validated={true} onSubmit={handleSubmit}  className="mt-4">
           <Row>
             <Col xs={12} md={6}>
               <TodayInput
@@ -288,7 +292,7 @@ function TodayTracker(): React.ReactNode {
               variant="outline-secondary"
               type="button"
               onClick={clearInputs}
-              className="mx-2"
+              className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             >
               Clear form
             </Button>
@@ -296,16 +300,32 @@ function TodayTracker(): React.ReactNode {
         </Form>
       </div>
 
-      <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
-        <Row className="mt-2">
-          <Col xs={12}>
-            <TodayTrackerResultText text={`Total worked: ${totalWorkedHours}`} />
-            <TodayTrackerResultText text={`You will complete 8 hours at: ${willCompleteAt}`} />
-            <TodayTrackerResultText text={`Time left: ${timeLeft}`} />
-            <TodayTrackerResultText text={`Extra: ${extraHours}`} />
-          </Col>
-        </Row>
-      </div>
+      {displayDaySummary && (
+        <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
+          <Row className="mt-2">
+            <Col xs={6}>
+              <TodayTrackerResultText
+                label="Total worked"
+                value={totalWorkedHours}
+              />
+              <TodayTrackerResultText
+                label="You will complete 8 hours at"
+                value={willCompleteAt}
+              />
+            </Col>
+            <Col xs={6}>
+              <TodayTrackerResultText
+                label="Time left"
+                value={timeLeft}
+              />
+              <TodayTrackerResultText
+                label="Extra"
+                value={extraHours}
+              />
+            </Col>
+          </Row>
+        </div>
+      )}
     </>
   );
 }

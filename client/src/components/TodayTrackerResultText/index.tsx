@@ -2,16 +2,17 @@ import React from 'react';
 import { useTheme } from '../../context/themeContext';
 
 interface Props {
-  text: string;
+  readonly label: string;
+  readonly value: string;
 }
 
-function TodayTrackerResultText(props: Props): React.ReactNode {
+function TodayTrackerResultText(props: React.PropsWithChildren<Props>): React.ReactNode {
   const { theme } = useTheme();
 
   return (
-    <h4 className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>
-      {props.text}
-    </h4>
+    <p className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>
+      {props.label}: <b>{props.value}</b>
+    </p>
   );
 }
 

@@ -11,3 +11,16 @@ h1, h3 {
 .text-dark-muted {
   color: #ccc;
 }
+
+.btn-darker {
+  background-color: #000;
+  color: #fff;
+  border: 1px solid #000;
+  min-width: 130px;
+}
+
+.btn-lighter {
+  background-color: #f8f9fa;
+  color: #000;
+  border: 1px solid #000;
+}

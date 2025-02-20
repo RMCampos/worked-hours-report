@@ -1,0 +1,11 @@
+@media screen and (max-width: 1050px) {
+  .smart-title {
+    font-size: 20px;
+  }
+}
+
+@media screen and (max-width: 900px) {
+  .smart-title {
+    font-size: 16px;
+  }
+}

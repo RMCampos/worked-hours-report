@@ -11,8 +11,8 @@ import { useTheme } from '../../context/themeContext';
 import { PeriodAmount } from '../../types/periodAmount';
 
 function Report(): React.ReactNode {
-  const [selectedMonthId, setSelectedMonthId] = useState<number>(0);
-  const [selectedYearId, setSelectedYearId] = useState<number>(2025);
+  const [selectedMonthId, setSelectedMonthId] = useState<number>(new Date().getMonth());
+  const [selectedYearId, setSelectedYearId] = useState<number>(new Date().getFullYear());
   const [reportData, setReportData] = useState<DailyReport[]>([]);
   const { theme } = useTheme();
 
@@ -95,11 +95,10 @@ function Report(): React.ReactNode {
 
   return (
     <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
-      <h1 className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>Monthly Report</h1>
+      <h1 className={`my-4 ${theme === 'light' ? 'text-dark' : 'text-light'}`}>Monthly Report</h1>
 
-      <span className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>Period:</span>
       <Row>
-        <Col xs={4}>
+        <Col xs={12} md={3}>
           <Form.Select
             aria-label="Default select example"
             value={selectedMonthId}
@@ -120,7 +119,7 @@ function Report(): React.ReactNode {
             ))}
           </Form.Select>
         </Col>
-        <Col xs={4}>
+        <Col xs={12} md={3}>
           <Form.Select
             aria-label="Default select example"
             value={selectedYearId}
@@ -136,11 +135,11 @@ function Report(): React.ReactNode {
             ))}
           </Form.Select>
         </Col>
-        <Col xs={4}>
+        <Col xs={12} md={6} className="text-center">
           <Button
             variant="outline-secondary"
             type="button"
-            className="ms-2"
+            className={`ms-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             onClick={loadCurrentPeriod}
           >
             Load current
@@ -148,7 +147,7 @@ function Report(): React.ReactNode {
           <Button
             variant="outline-secondary"
             type="button"
-            className="ms-2"
+            className={`ms-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             onClick={loadSelectedPeriod}
           >
             Reload

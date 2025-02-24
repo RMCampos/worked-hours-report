@@ -13,6 +13,7 @@ import { getDayOfTheWeek, getDayExtension, getMonthName } from '../../date-servi
 import { useTheme } from '../../context/themeContext';
 import TodayTrackerResultText from '../TodayTrackerResultText';
 import { EMPTY_HOUR_MINUTE } from '../../constants/appDefinitions';
+import { DayDirection } from '../../enums/dayDirection';
 import './styles.css';
 
 function TodayTracker(): React.ReactNode {
@@ -31,6 +32,10 @@ function TodayTracker(): React.ReactNode {
   const [displayDaySummary, setDisplayDaySummary] = useState<boolean>(false);
   const { theme } = useTheme();
 
+  /**
+   * Handles the submit, after clicking 'Calculate and save' button.
+   * @param {React.FormEvent<HTMLFormElement>} event The form submit event.
+   */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     event.stopPropagation();
@@ -102,6 +107,9 @@ function TodayTracker(): React.ReactNode {
     setDisplayDaySummary(true);
   };
 
+  /**
+   * Clears all the input fields.
+   */
   const clearInputs = (): void => {
     setTimeOne('');
     setTimeTwo('');
@@ -112,6 +120,11 @@ function TodayTracker(): React.ReactNode {
     setDisplayDaySummary(false);
   };
 
+  /**
+   * Load a given day from local storage.
+   *
+   * @param {string} theDay The day to be loaded.
+   */
   const loadFromStorage = (theDay: string): void => {
     const data: TodayTrackerStore | undefined = loadTrackerForDate(theDay);
     if (data) {
@@ -140,6 +153,12 @@ function TodayTracker(): React.ReactNode {
     }
   };
 
+  /**
+   * Loads the message for a given day.
+   *
+   * @param {Date} theDay the day to be loaded.
+   * @param {string} formatted the formatted day.
+   */
   const loadTodayDateMessage = (theDay: Date, formatted: string): void => {
     const parts: string[] = [];
     parts.push(getDayOfTheWeek(theDay.getDay()));
@@ -156,13 +175,18 @@ function TodayTracker(): React.ReactNode {
     setDateMessage(finalMessage);
   };
 
-  const goToDay = (sign: string): void => {
+  /**
+   * Change the current day being displayed.
+   *
+   * @param sign {DayDirection} the sign defining the direction
+   */
+  const goToDay = (sign: DayDirection): void => {
     let currentDate = new Date(currentDay);
 
-    if (sign === '+') {
+    if (sign === DayDirection.TOMORROW) {
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    else if (sign === '-') {
+    else if (sign === DayDirection.YESTERDAY) {
       currentDate.setDate(currentDate.getDate() - 1);
     }
     else {
@@ -191,7 +215,7 @@ function TodayTracker(): React.ReactNode {
             <Button
               variant="outline-secondary"
               type="button"
-              onClick={() => goToDay('-')}
+              onClick={() => goToDay(DayDirection.YESTERDAY)}
               className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             >
               <ArrowLeft />
@@ -201,7 +225,7 @@ function TodayTracker(): React.ReactNode {
             <Button
               variant="outline-secondary"
               type="button"
-              onClick={() => goToDay('')}
+              onClick={() => goToDay(DayDirection.TODAY)}
               className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             >
               Today
@@ -209,7 +233,7 @@ function TodayTracker(): React.ReactNode {
             <Button
               variant="outline-secondary"
               type="button"
-              onClick={() => goToDay('+')}
+              onClick={() => goToDay(DayDirection.TOMORROW)}
               className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
             >
               Next day

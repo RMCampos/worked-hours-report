@@ -9,19 +9,35 @@ import { loadAmountForPeriod, loadTrackerForDate, saveAmountForPeriod } from '..
 import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
 import { PeriodAmount } from '../../types/periodAmount';
+import DownloadJsonButton from '../DownloadJsonButton';
 
+/**
+ * Renders the Report component.
+ *
+ * @returns {React.ReactNode} The rendered component.
+ */
 function Report(): React.ReactNode {
   const [selectedMonthId, setSelectedMonthId] = useState<number>(new Date().getMonth());
   const [selectedYearId, setSelectedYearId] = useState<number>(new Date().getFullYear());
   const [reportData, setReportData] = useState<DailyReport[]>([]);
+  const [enableExport, setEnableExport] = useState<boolean>(false);
+  const [jsonDataToDownload, setJsonDataToDownload] = useState<DailyReport[]>([]);
+  const [filename, setFilename] = useState<string>('');
   const { theme } = useTheme();
 
+  /**
+   * Loads the report for the current period.
+   */
   const loadCurrentPeriod = (): void => {
     const date = new Date();
     setSelectedMonthId(date.getMonth());
     setSelectedYearId(date.getFullYear());
+    setEnableExport(false);
   };
 
+  /**
+   * Loads the report for the selected perior (month and year).
+   */
   const loadSelectedPeriod = (): void => {
     if (isNaN(selectedMonthId) || !selectedYearId) {
       return;
@@ -87,11 +103,24 @@ function Report(): React.ReactNode {
     };
 
     saveAmountForPeriod(periodAmount);
+
+    // Check if should export data
+    if (enableExport && reportDataToSet) {
+      setJsonDataToDownload(reportDataToSet);
+      setFilename(`month${selectedMonthId}-year${selectedYearId}.json`);
+    }
+  };
+
+  /**
+   * Export the selected month to a JSON file.
+   */
+  const exportMonthData = (): void => {
+    setEnableExport(true);
   };
 
   useEffect(() => {
     loadSelectedPeriod();
-  }, [selectedMonthId, selectedYearId]);
+  }, [selectedMonthId, selectedYearId, enableExport]);
 
   return (
     <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
@@ -205,6 +234,19 @@ function Report(): React.ReactNode {
               ))}
             </tbody>
           </Table>
+
+          <Button
+            variant="outline-secondary"
+            type="button"
+            className={`my-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
+            onClick={exportMonthData}
+          >
+            Export month data
+          </Button>
+
+          {enableExport && (
+            <DownloadJsonButton jsonData={jsonDataToDownload} filename={filename} />
+          )}
         </Col>
       </Row>
     </div>

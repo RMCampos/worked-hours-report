@@ -13,7 +13,7 @@ function TodayTrackerResultText(props: React.PropsWithChildren<Props>): React.Re
     <p className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>
       {props.label}
       :
-      <b>{props.value}</b>
+      <b className="reportText">{props.value}</b>
     </p>
   );
 }

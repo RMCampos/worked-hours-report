@@ -5,11 +5,12 @@ import { IdAndValue } from '../../types/IdAndValue';
 import { createDayArrayForMonthYear, getLastPeriod } from '../../date-service';
 import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { loadAmountForPeriod, loadTrackerForDate, saveAmountForPeriod } from '../../storage-service/storage';
+import { loadAmountForPeriod, loadTrackerForDate, saveAmountForPeriod, saveTodayTracker } from '../../storage-service/storage';
 import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
 import { PeriodAmount } from '../../types/periodAmount';
 import DownloadJsonButton from '../DownloadJsonButton';
+import JsonFileUploader from '../JsonFileUploader';
 
 /**
  * Renders the Report component.
@@ -21,6 +22,7 @@ function Report(): React.ReactNode {
   const [selectedYearId, setSelectedYearId] = useState<number>(new Date().getFullYear());
   const [reportData, setReportData] = useState<DailyReport[]>([]);
   const [enableExport, setEnableExport] = useState<boolean>(false);
+  const [enableImport, setEnableImport] = useState<boolean>(false);
   const [jsonDataToDownload, setJsonDataToDownload] = useState<DailyReport[]>([]);
   const [filename, setFilename] = useState<string>('');
   const { theme } = useTheme();
@@ -36,7 +38,7 @@ function Report(): React.ReactNode {
   };
 
   /**
-   * Loads the report for the selected perior (month and year).
+   * Loads the report for the selected period (month and year).
    */
   const loadSelectedPeriod = (): void => {
     if (isNaN(selectedMonthId) || !selectedYearId) {
@@ -118,9 +120,39 @@ function Report(): React.ReactNode {
     setEnableExport(true);
   };
 
+  /**
+   * Enable the import input to show up.
+   */
+  const importMonthData = (): void => {
+    setEnableImport(true);
+  };
+
+  const handleUploadedJson = (content: string): void => {
+    setEnableImport(false);
+    const jsonData = JSON.parse(content);
+
+    for (let i = 0, len = jsonData.length; i < len; i++) {
+      const jsonObj = jsonData[i];
+      const { dayOfMonth } = jsonObj;
+      const objToSave: TodayTrackerStore = {
+        time1: jsonObj.started1,
+        time2: jsonObj.stopped1,
+        time3: jsonObj.started2,
+        time4: jsonObj.stopped2,
+        time5: jsonObj.started3,
+        time6: jsonObj.stopped3,
+        totalWorkedHours: jsonObj.worked,
+        willCompleteAt: '',
+        timeLeft: '',
+        extraHours: jsonObj.extra
+      };
+      saveTodayTracker(objToSave, dayOfMonth);
+    }
+  };
+
   useEffect(() => {
     loadSelectedPeriod();
-  }, [selectedMonthId, selectedYearId, enableExport]);
+  }, [selectedMonthId, selectedYearId, enableExport, enableImport]);
 
   return (
     <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
@@ -243,9 +275,21 @@ function Report(): React.ReactNode {
           >
             Export month data
           </Button>
+          <Button
+            variant="outline-secondary"
+            type="button"
+            className={`my-2 ms-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
+            onClick={importMonthData}
+          >
+            Import month data
+          </Button>
 
           {enableExport && (
             <DownloadJsonButton jsonData={jsonDataToDownload} filename={filename} />
+          )}
+
+          {enableImport && (
+            <JsonFileUploader onJsonUploaded={handleUploadedJson} maxSizeMB={5} />
           )}
         </Col>
       </Row>

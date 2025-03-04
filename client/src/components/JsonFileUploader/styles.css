@@ -1,0 +1,36 @@
+.json-file-uploader {
+  margin: 20px 0;
+}
+
+.upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.upload-button {
+  display: inline-block;
+  padding: 10px 16px;
+  background-color: #4a90e2;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.upload-button:hover {
+  background-color: #3a7bc8;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #555;
+}
+
+.error-message {
+  margin-top: 10px;
+  color: #d32f2f;
+  font-size: 14px;
+}

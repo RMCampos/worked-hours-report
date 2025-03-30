@@ -45,6 +45,9 @@ function Report(): React.ReactNode {
       return;
     }
 
+    const monthYearKey = `${selectedYearId}-${selectedMonthId}`;
+    console.log('load data for:', monthYearKey);
+
     // Get amount from last month
     const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
     let previousAmountMinutes = loadAmountForPeriod(lastPeriod);

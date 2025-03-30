@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '../../context/themeContext';
+import { getThemeForUser, saveThemeForUser } from '../../storage-service/server';
 import './style.css';
-import { getTheme, saveTheme } from '../../storage-service/storage';
 
 function DarkButton(): React.ReactNode {
   const { theme, setTheme } = useTheme();
@@ -23,25 +23,23 @@ function DarkButton(): React.ReactNode {
     }
     document.body.classList.value = bodyClasses;
 
-    // Save it to local storage
-    saveTheme(themeToSet);
+    saveThemeForUser('ricardompcampos@gmail.com', themeToSet);
   };
 
-  const localSavedTheme = (): void => {
-    const savedTheme = getTheme();
-    if (savedTheme && savedTheme !== theme) {
-      setTheme(savedTheme);
-    }
-
-    if (savedTheme === 'light') {
-      if (!document.body.classList.value.includes('text-bg-light')) {
-        document.body.classList.value = 'text-bg-light';
+  const localSavedTheme = async (): Promise<void> => {
+    const themeFromServer = await getThemeForUser('ricardompcampos@gmail.com');
+    if (themeFromServer) {
+      if (themeFromServer === 'light') {
+        if (!document.body.classList.value.includes('text-bg-light')) {
+          document.body.classList.value = 'text-bg-light';
+        }
       }
-    }
-    else if (savedTheme === 'dark') {
-      if (!document.body.classList.value.includes('text-bg-dark')) {
-        document.body.classList.value = 'text-bg-dark';
+      else if (themeFromServer === 'dark') {
+        if (!document.body.classList.value.includes('text-bg-dark')) {
+          document.body.classList.value = 'text-bg-dark';
+        }
       }
+      setTheme(themeFromServer);
     }
   };
 

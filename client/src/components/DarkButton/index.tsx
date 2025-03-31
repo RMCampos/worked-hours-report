@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useTheme } from '../../context/themeContext';
 import { getThemeForUser, saveThemeForUser } from '../../storage-service/server';
 import './style.css';
+import { AuthContext } from '../../context/authContext';
 
 function DarkButton(): React.ReactNode {
   const { theme, setTheme } = useTheme();
+  const { username, signed } = useContext(AuthContext);
 
   const toggleDarkMode = (): void => {
     const themeToSet = theme === 'light' ? 'dark' : 'light';
@@ -23,23 +25,27 @@ function DarkButton(): React.ReactNode {
     }
     document.body.classList.value = bodyClasses;
 
-    saveThemeForUser('ricardompcampos@gmail.com', themeToSet);
+    if (username) {
+      saveThemeForUser(username, themeToSet);
+    }
   };
 
   const localSavedTheme = async (): Promise<void> => {
-    const themeFromServer = await getThemeForUser('ricardompcampos@gmail.com');
-    if (themeFromServer) {
-      if (themeFromServer === 'light') {
-        if (!document.body.classList.value.includes('text-bg-light')) {
-          document.body.classList.value = 'text-bg-light';
+    if (username) {
+      const themeFromServer = await getThemeForUser(username);
+      if (themeFromServer) {
+        if (themeFromServer === 'light') {
+          if (!document.body.classList.value.includes('text-bg-light')) {
+            document.body.classList.value = 'text-bg-light';
+          }
         }
-      }
-      else if (themeFromServer === 'dark') {
-        if (!document.body.classList.value.includes('text-bg-dark')) {
-          document.body.classList.value = 'text-bg-dark';
+        else if (themeFromServer === 'dark') {
+          if (!document.body.classList.value.includes('text-bg-dark')) {
+            document.body.classList.value = 'text-bg-dark';
+          }
         }
+        setTheme(themeFromServer);
       }
-      setTheme(themeFromServer);
     }
   };
 
@@ -52,6 +58,7 @@ function DarkButton(): React.ReactNode {
       type="button"
       className="btn btn-dark"
       onClick={toggleDarkMode}
+      disabled={!signed}
     >
       Toggle Dark Mode
     </button>

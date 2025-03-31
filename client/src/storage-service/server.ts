@@ -1,4 +1,4 @@
-import { Client, Databases, ID, Query } from 'appwrite';
+import { Account, Client, Databases, ID, Query } from 'appwrite';
 
 type ProjectKey = 'ENDPOINT' | 'PROJECT_ID' | 'DB_ID' | 'TRACKER' | 'THEME' | 'AMOUNT';
 
@@ -38,27 +38,25 @@ function getValue(key: ProjectKey): string {
 }
 
 // Private
-function startClient(): Databases | null {
+function getClient(): Client | null {
   if (!validateCollections()) {
     return null;
   }
 
-  const client = new Client()
+  return new Client()
     .setEndpoint(getValue('ENDPOINT'))
     .setProject(getValue('PROJECT_ID'));
-
-  const databases = new Databases(client);
-  return databases;
 }
 
 // Public
 const getThemeForUser = async (username: string): Promise<string | null> => {
-  const databases: Databases | null = startClient();
-  if (!databases) {
-    console.error('Unable to get Databases');
+  const client = getClient();
+  if (!client) {
+    console.error('Unable to get Client instance');
     return null;
   }
 
+  const databases = new Databases(client);
   const databaseId = getValue('DB_ID');
   const collectionId = getValue('THEME');
 
@@ -87,12 +85,13 @@ const getThemeForUser = async (username: string): Promise<string | null> => {
 };
 
 const saveThemeForUser = async (username: string, theme: string): Promise<boolean> => {
-  const databases: Databases | null = startClient();
-  if (!databases) {
-    console.error('Unable to get Databases');
+  const client = getClient();
+  if (!client) {
+    console.error('Unable to get Client instance');
     return false;
   }
 
+  const databases = new Databases(client);
   const databaseId: string = getValue('DB_ID');
   const collectionId: string = getValue('THEME');
   const storedThemeId: string | null = localStorage.getItem('WHOURS-THEME-ID');
@@ -122,8 +121,7 @@ const saveThemeForUser = async (username: string, theme: string): Promise<boolea
   }
 
   try {
-    const response = await promise;
-    console.info('response', response);
+    await promise;
     return true;
   }
   catch (error) {
@@ -133,4 +131,85 @@ const saveThemeForUser = async (username: string, theme: string): Promise<boolea
   return false;
 };
 
-export { getThemeForUser, saveThemeForUser };
+const signUpUser = async (email: string, password: string): Promise<string | Error | null> => {
+  const client = getClient();
+  if (!client) {
+    console.error('Unable to get Client instance');
+    return null;
+  }
+
+  const account = new Account(client);
+  const promise = account.create(ID.unique(), email, password);
+
+  try {
+    const response = await promise;
+    return response.$id;
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      const message = error.message;
+      console.log(message);
+      return error;
+    }
+  }
+
+  return null;
+};
+
+const signInUser = async (email: string, password: string): Promise<string | Error | null> => {
+  const client = getClient();
+  if (!client) {
+    console.error('Unable to get Client instance');
+    return null;
+  }
+
+  const account = new Account(client);
+  const promise = account.createEmailPasswordSession(email, password);
+
+  try {
+    const response = await promise;
+    return response.$id;
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      const message = error.message;
+      console.log(message);
+      return error;
+    }
+  }
+
+  return null;
+};
+
+const signOutUser = async (sessionId: string): Promise<boolean | Error | null> => {
+  const client = getClient();
+  if (!client) {
+    console.error('Unable to get Client instance');
+    return null;
+  }
+
+  const account = new Account(client);
+  const promise = account.deleteSession(sessionId);
+
+  try {
+    await promise;
+    return true;
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      const message = error.message;
+      console.log(message);
+      return error;
+    }
+  }
+
+  return null;
+};
+
+export {
+  getThemeForUser,
+  saveThemeForUser,
+  signUpUser,
+  signInUser,
+  signOutUser
+};

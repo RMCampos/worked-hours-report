@@ -3,6 +3,7 @@ import { Container } from 'react-bootstrap';
 import TodayTracker from './components/TodayTracker';
 import Report from './components/Report';
 import DarkButton from './components/DarkButton';
+import Navigation from './components/Navigation';
 import { useTheme } from './context/themeContext';
 import './styles/custom.scss';
 
@@ -17,11 +18,14 @@ function App(): React.ReactNode {
   const { theme } = useTheme();
 
   return (
-    <Container fluid className={`text-bg-${theme}`}>
-      <TodayTracker />
-      <Report />
-      <DarkButton />
-    </Container>
+    <>
+      <Navigation />
+      <Container fluid className={`text-bg-${theme}`}>
+        <TodayTracker />
+        <Report />
+        <DarkButton />
+      </Container>
+    </>
   );
 };
 

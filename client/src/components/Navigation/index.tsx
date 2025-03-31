@@ -3,10 +3,12 @@ import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import { AuthContext } from '../../context/authContext';
 import UserModal from '../UserModal';
+import { useTheme } from '../../context/themeContext';
 
 function Navigation() {
   const [showModal, setShowModal] = useState<boolean>(false);
   const { signed, checkLogin, username, signOut } = useContext(AuthContext);
+  const { theme } = useTheme();
 
   const signInRegister = (e: React.MouseEvent<Element, MouseEvent>): void => {
     e.preventDefault();
@@ -29,7 +31,7 @@ function Navigation() {
   }, [signed]);
 
   return (
-    <Navbar expand="lg" className="bg-body-tertiary justify-content-between">
+    <Navbar expand="lg" className="bg-body-tertiary justify-content-between" bg={theme} data-bs-theme={theme}>
       <Container>
         <Navbar.Brand href="#">Worked Hours</Navbar.Brand>
         <Navbar.Toggle />

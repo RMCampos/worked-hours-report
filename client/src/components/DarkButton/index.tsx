@@ -6,7 +6,7 @@ import { AuthContext } from '../../context/authContext';
 
 function DarkButton(): React.ReactNode {
   const { theme, setTheme } = useTheme();
-  const { username, signed } = useContext(AuthContext);
+  const { username } = useContext(AuthContext);
 
   const toggleDarkMode = (): void => {
     const themeToSet = theme === 'light' ? 'dark' : 'light';
@@ -58,7 +58,6 @@ function DarkButton(): React.ReactNode {
       type="button"
       className="btn btn-dark"
       onClick={toggleDarkMode}
-      disabled={!signed}
     >
       Toggle Dark Mode
     </button>

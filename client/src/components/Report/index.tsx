@@ -59,7 +59,6 @@ function Report(): React.ReactNode {
 
     // Get amount from last month
     const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
-    console.log('load amount for last:', lastPeriod);
     const previousAmountObj: MonthAmount | null = await getMonthAmountForUserAndPeriod(username, lastPeriod);
 
     if (previousAmountObj) {
@@ -168,8 +167,7 @@ function Report(): React.ReactNode {
         documentId: null
       };
 
-      // saveTodayTracker(objToSave, dayOfMonth);
-      console.log(objToSave);
+      console.debug(objToSave);
       // TODO: create a save all method
     }
   };

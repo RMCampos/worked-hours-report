@@ -6,6 +6,7 @@ import { AuthContext } from '../../context/authContext';
 import { useTheme } from '../../context/themeContext';
 import { useMessage } from '../../context/MessageContext';
 import './style.css';
+import { getError } from '../../services/ErrorService';
 
 type Props = {
   show: boolean;
@@ -45,28 +46,18 @@ const UserModal: React.FC<Props> = (props: Props): React.ReactNode => {
 
     setFormInvalid(false);
 
-    if (alreadyRegistered) {
-      showMessage('loading', 'Signin you in...');
+    try {
+      if (alreadyRegistered) {
+        showMessage('loading', 'Signin you in...');
 
-      const result = await signIn(email, password);
-      if (result instanceof Error) {
-        setFormInvalid(true);
-        setErrorMessage(result.message);
-      }
-      else if (typeof result === 'boolean' && result === true) {
+        await signIn(email, password);
         hideMessage();
         props.onHide();
       }
-    }
-    else {
-      showMessage('loading', 'Signin you up...');
+      else {
+        showMessage('loading', 'Signin you up...');
 
-      const result = await signUp(email, password);
-      if (result instanceof Error) {
-        setFormInvalid(true);
-        setErrorMessage(result.message);
-      }
-      else if (typeof result === 'boolean' && result === true) {
+        await signUp(email, password);
         setErrorMessage('');
         setEmail('');
         setPassword('');
@@ -74,6 +65,10 @@ const UserModal: React.FC<Props> = (props: Props): React.ReactNode => {
         hideMessage();
         props.onHide();
       }
+    }
+    catch (error) {
+      setFormInvalid(true);
+      setErrorMessage(getError(error));
     }
   };
 

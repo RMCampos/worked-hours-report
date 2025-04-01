@@ -51,11 +51,10 @@ function getClient(): Client | null {
 }
 
 // Public
-const getThemeForUser = async (username: string): Promise<string | null> => {
+const getThemeForUser = async (username: string): Promise<string> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return null;
+    throw new Error('Unable to get Client instance');
   }
 
   const databases = new Databases(client);
@@ -80,17 +79,18 @@ const getThemeForUser = async (username: string): Promise<string | null> => {
     }
   }
   catch (error) {
-    console.error('error', error);
+    if (error instanceof Error) {
+      throw error;
+    }
   }
 
-  return '';
+  throw new Error('Unexpected error');
 };
 
 const saveThemeForUser = async (username: string, theme: string): Promise<boolean> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return false;
+    throw new Error('Unable to get Client instance');
   }
 
   const databases = new Databases(client);
@@ -127,17 +127,18 @@ const saveThemeForUser = async (username: string, theme: string): Promise<boolea
     return true;
   }
   catch (error) {
-    console.error('error', error);
+    if (error instanceof Error) {
+      throw error;
+    }
   }
 
-  return false;
+  throw new Error('Unexpected error');
 };
 
-const signUpUser = async (email: string, password: string): Promise<string | Error | null> => {
+const signUpUser = async (email: string, password: string): Promise<string> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return null;
+    throw new Error('Unable to get Client instance');
   }
 
   const account = new Account(client);
@@ -149,18 +150,17 @@ const signUpUser = async (email: string, password: string): Promise<string | Err
   }
   catch (error) {
     if (error instanceof Error) {
-      return error.message;
+      throw error;
     }
   }
 
-  return null;
+  throw new Error('Unexpected error');
 };
 
-const signInUser = async (email: string, password: string): Promise<string | Error | null> => {
+const signInUser = async (email: string, password: string): Promise<string> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return null;
+    throw new Error('Unable to get Client instance');
   }
 
   const account = new Account(client);
@@ -172,18 +172,17 @@ const signInUser = async (email: string, password: string): Promise<string | Err
   }
   catch (error) {
     if (error instanceof Error) {
-      return error.message;
+      throw error;
     }
   }
 
-  return null;
+  throw new Error('Unexpected error');
 };
 
-const signOutUser = async (sessionId: string): Promise<boolean | Error | null> => {
+const signOutUser = async (sessionId: string): Promise<boolean> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return null;
+    throw new Error('Unable to get Client instance');
   }
 
   const account = new Account(client);
@@ -195,18 +194,17 @@ const signOutUser = async (sessionId: string): Promise<boolean | Error | null> =
   }
   catch (error) {
     if (error instanceof Error) {
-      return error;
+      throw error;
     }
   }
 
-  return null;
+  throw new Error('Unexpected error');
 };
 
-const getTimesForUserAndDay = async (username: string, day: string): Promise<TodayTrackerStore | null> => {
+const getTimesForUserAndDay = async (username: string, day: string): Promise<TodayTrackerStore> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return null;
+    throw new Error('Unable to get Client instance');
   }
 
   const databases = new Databases(client);
@@ -224,38 +222,54 @@ const getTimesForUserAndDay = async (username: string, day: string): Promise<Tod
 
   try {
     const response = await promise;
+    const tracker: TodayTrackerStore = {
+      day: '',
+      time1: '',
+      time2: '',
+      time3: '',
+      time4: '',
+      time5: '',
+      time6: '',
+      totalWorkedHours: '',
+      willCompleteAt: '',
+      timeLeft: '',
+      extraHours: '',
+      documentId: ''
+    };
+
     if (response.total > 0) {
       const document = response.documents[0];
 
-      return {
-        day: document.day,
-        time1: document.time1 || '',
-        time2: document.time2 || '',
-        time3: document.time3 || '',
-        time4: document.time4 || '',
-        time5: document.time5 || '',
-        time6: document.time6 || '',
-        totalWorkedHours: document.totalWorkedHours || '',
-        willCompleteAt: document.willCompleteAt || '',
-        timeLeft: document.timeLeft || '',
-        extraHours: document.extraHours || '',
-        documentId: document.$id
-      };
+      tracker.day = document.day;
+      tracker.time1 = document.time1 || '';
+      tracker.time2 = document.time2 || '';
+      tracker.time3 = document.time3 || '';
+      tracker.time4 = document.time4 || '';
+      tracker.time5 = document.time5 || '';
+      tracker.time6 = document.time6 || '';
+      tracker.totalWorkedHours = document.totalWorkedHours || '';
+      tracker.willCompleteAt = document.willCompleteAt || '';
+      tracker.timeLeft = document.timeLeft || '';
+      tracker.extraHours = document.extraHours || '';
+      tracker.documentId = document.$id;
     }
+
+    return tracker;
   }
   catch (error) {
-    console.error('error', error);
-    // TODO: handle error
+    if (error instanceof Error) {
+      throw error;
+    }
+    else {
+      throw new Error('Unexpected error: ' + error as string);
+    }
   }
-
-  return null;
 };
 
-const createTimeForUserAndDay = async (username: string, day: string, tracker: TodayTrackerStore): Promise<string | null> => {
+const createTimeForUserAndDay = async (username: string, day: string, tracker: TodayTrackerStore): Promise<string> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return null;
+    throw new Error('Unable to get Client instance');
   }
 
   const databases = new Databases(client);
@@ -287,23 +301,22 @@ const createTimeForUserAndDay = async (username: string, day: string, tracker: T
     return response.$id;
   }
   catch (error) {
-    console.error('error', error);
-    // TODO: handle error
+    if (error instanceof Error) {
+      throw error;
+    }
   }
 
-  return null;
+  throw new Error('Unexpected error');
 };
 
 const updateTimesForUserAndDay = async (username: string, day: string, tracker: TodayTrackerStore): Promise<boolean> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return false;
+    throw new Error('Unable to get Client instance');
   }
 
   if (!tracker.documentId) {
-    console.error('No document id provided');
-    return false;
+    throw new Error('No document id provided');
   }
 
   const databases = new Databases(client);
@@ -335,18 +348,18 @@ const updateTimesForUserAndDay = async (username: string, day: string, tracker: 
     return true;
   }
   catch (error) {
-    console.error('error', error);
-    // TODO: handle error
+    if (error instanceof Error) {
+      throw error;
+    }
   }
 
-  return false;
+  throw new Error('Unexpected error');
 };
 
 const getAllTimesForUserAndPeriod = async (username: string, period: string): Promise<TodayTrackerStore[]> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return [];
+    throw new Error('Unable to get Client instance');
   }
 
   const databases = new Databases(client);
@@ -386,18 +399,18 @@ const getAllTimesForUserAndPeriod = async (username: string, period: string): Pr
     }
   }
   catch (error) {
-    console.error('error', error);
-    // TODO: handle error
+    if (error instanceof Error) {
+      throw error;
+    }
   }
 
-  return [];
+  throw new Error('Unexpected error');
 };
 
-const getMonthAmountForUserAndPeriod = async (username: string, period: string): Promise<MonthAmount | null> => {
+const getMonthAmountForUserAndPeriod = async (username: string, period: string): Promise<MonthAmount> => {
   const client = getClient();
   if (!client) {
-    console.error('Unable to get Client instance');
-    return null;
+    throw new Error('Unable to get Client instance');
   }
 
   const databases = new Databases(client);
@@ -415,21 +428,28 @@ const getMonthAmountForUserAndPeriod = async (username: string, period: string):
 
   try {
     const response = await promise;
+    const monthAmount: MonthAmount = {
+      amount: 0,
+      documentId: ''
+    };
+
     if (response.total > 0) {
       const document = response.documents[0];
 
-      return {
-        amount: document.amountOfMinutes,
-        documentId: document.$id
-      };
+      monthAmount.amount = document.amountOfMinutes;
+      monthAmount.documentId = document.$id;
     }
+
+    return monthAmount;
   }
   catch (error) {
-    console.error('error', error);
-    // TODO: handle error
+    if (error instanceof Error) {
+      throw error;
+    }
+    else {
+      throw new Error('Unexpected error: ' + error as string);
+    }
   }
-
-  return null;
 };
 
 export {

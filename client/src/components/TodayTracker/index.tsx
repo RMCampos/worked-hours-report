@@ -15,6 +15,8 @@ import { EMPTY_HOUR_MINUTE } from '../../constants/appDefinitions';
 import { DayDirection } from '../../enums/dayDirection';
 import { createTimeForUserAndDay, getTimesForUserAndDay, updateTimesForUserAndDay } from '../../storage-service/server';
 import { AuthContext } from '../../context/authContext';
+import { useMessage } from '../../context/MessageContext';
+import { getError } from '../../services/ErrorService';
 import './styles.css';
 
 function TodayTracker(): React.ReactNode {
@@ -34,6 +36,7 @@ function TodayTracker(): React.ReactNode {
   const [documentId, setDocumentId] = useState<string>('');
   const { theme } = useTheme();
   const { username } = useContext(AuthContext);
+  const { showMessage, hideMessage } = useMessage();
 
   /**
    * Handles the submit, after clicking 'Calculate and save' button.
@@ -119,16 +122,24 @@ function TodayTracker(): React.ReactNode {
       objToSave.extraHours = objToSave.extraHours.substring(7);
     }
 
-    if (documentId) {
-      objToSave.documentId = documentId;
-      await updateTimesForUserAndDay(username, formattedToSave, objToSave);
-    }
-    else {
-      // create
-      const newId = await createTimeForUserAndDay(username, formattedToSave, objToSave);
-      if (newId) {
-        setDocumentId(newId);
+    try {
+      showMessage('loading', 'Saving your data...');
+
+      if (documentId) {
+        objToSave.documentId = documentId;
+        await updateTimesForUserAndDay(username, formattedToSave, objToSave);
       }
+      else {
+        const newId = await createTimeForUserAndDay(username, formattedToSave, objToSave);
+        if (newId) {
+          setDocumentId(newId);
+        }
+      }
+
+      hideMessage();
+    }
+    catch (err) {
+      showMessage('error', getError(err));
     }
   };
 
@@ -226,12 +237,19 @@ function TodayTracker(): React.ReactNode {
     loadTodayDateMessage(currentDay, formatted);
     if (username) {
       const load = async () => {
-        setDocumentId('');
-        const result: TodayTrackerStore | null = await getTimesForUserAndDay(username, formatted);
-        if (result && result.documentId) {
-          setDocumentId(result.documentId);
+        try {
+          setDocumentId('');
+          showMessage('loading', 'Fetching data...');
+          const result: TodayTrackerStore = await getTimesForUserAndDay(username, formatted);
+          if (result && result.documentId) {
+            setDocumentId(result.documentId);
+          }
+          loadFromStorage(result);
+          hideMessage();
         }
-        loadFromStorage(result);
+        catch (error) {
+          showMessage('error', getError(error));
+        }
       };
 
       load();

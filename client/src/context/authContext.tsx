@@ -4,10 +4,10 @@ import { signUpUser, signInUser, signOutUser } from '../storage-service/server';
 
 export interface AuthContextData {
   signed: boolean;
-  username: string | null;
+  username: string;
   checkLogin: () => boolean;
-  signUp: (email: string, password: string) => Promise<Error | boolean>;
-  signIn: (email: string, password: string) => Promise<Error | boolean>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
 };
 
@@ -15,7 +15,7 @@ export const AuthContext = createContext<AuthContextData>({} as AuthContextData)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [signed, setSigned] = useState<boolean>(false);
-  const [username, setUsername] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>('');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
   const signinUserPriv = (username: string, sessionId: string) => {
@@ -31,35 +31,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('WHOURS-USER-DATA', JSON.stringify(userData));
   };
 
-  const signUp = async (email: string, password: string): Promise<Error | boolean> => {
-    let response: string | Error | null = await signUpUser(email, password);
-    if (!response || typeof response !== 'string') {
-      return false;
-    }
-
-    response = await signInUser(email, password);
-    if (response && typeof response === 'string') {
+  const signUp = async (email: string, password: string): Promise<void> => {
+    try {
+      await signUpUser(email, password);
+      const response = await signInUser(email, password);
       signinUserPriv(email, response);
-      return true;
     }
-
-    if (response instanceof Error) {
-      return response;
+    catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
     }
-
-    return false;
   };
 
-  const signIn = async (email: string, password: string): Promise<Error | boolean> => {
-    const response: string | Error | null = await signInUser(email, password);
-    if (response && typeof response === 'string') {
+  const signIn = async (email: string, password: string): Promise<void> => {
+    try {
+      const response: string = await signInUser(email, password);
       signinUserPriv(email, response);
-      return true;
     }
-    if (response instanceof Error) {
-      return response;
+    catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
     }
-    return false;
   };
 
   const checkLogin = (): boolean => {
@@ -78,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     localStorage.removeItem('WHOURS-USER-DATA');
     setSigned(false);
-    setUsername(null);
+    setUsername('');
     setSessionId(null);
   };
 

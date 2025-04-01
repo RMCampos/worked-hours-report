@@ -1,18 +1,20 @@
 import React, { useContext, useEffect } from 'react';
 import { useTheme } from '../../context/themeContext';
 import { getThemeForUser, saveThemeForUser } from '../../storage-service/server';
-import './style.css';
 import { AuthContext } from '../../context/authContext';
+import { useMessage } from '../../context/MessageContext';
+import { getError } from '../../services/ErrorService';
+import './style.css';
 
 function DarkButton(): React.ReactNode {
   const { theme, setTheme } = useTheme();
-  const { username } = useContext(AuthContext);
+  const { username, signed } = useContext(AuthContext);
+  const { showMessage } = useMessage();
 
   const toggleDarkMode = (): void => {
     const themeToSet = theme === 'light' ? 'dark' : 'light';
     setTheme(themeToSet);
 
-    // body
     const enableDark = theme === 'light';
     let bodyClasses: string = document.body.classList.value.trim();
     if (enableDark) {
@@ -30,10 +32,11 @@ function DarkButton(): React.ReactNode {
     }
   };
 
-  const localSavedTheme = async (): Promise<void> => {
-    if (username) {
-      const themeFromServer = await getThemeForUser(username);
-      if (themeFromServer) {
+  const loadSavedTheme = async (): Promise<void> => {
+    if (signed) {
+      try {
+        const themeFromServer = await getThemeForUser(username);
+
         if (themeFromServer === 'light') {
           if (!document.body.classList.value.includes('text-bg-light')) {
             document.body.classList.value = 'text-bg-light';
@@ -46,12 +49,15 @@ function DarkButton(): React.ReactNode {
         }
         setTheme(themeFromServer);
       }
+      catch (error) {
+        showMessage('error', getError(error));
+      }
     }
   };
 
   useEffect(() => {
-    localSavedTheme();
-  }, []);
+    loadSavedTheme();
+  }, [signed]);
 
   return (
     <button

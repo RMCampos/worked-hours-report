@@ -5,15 +5,15 @@ import { IdAndValue } from '../../types/IdAndValue';
 import { getLastPeriod } from '../../date-service';
 import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { saveAmountForPeriod } from '../../storage-service/storage';
 import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
-import { PeriodAmount } from '../../types/periodAmount';
 import DownloadJsonButton from '../DownloadJsonButton';
 import JsonFileUploader from '../JsonFileUploader';
 import { AuthContext } from '../../context/authContext';
 import { getAllTimesForUserAndPeriod, getMonthAmountForUserAndPeriod } from '../../storage-service/server';
 import { MonthAmount } from '../../types/monthAmount';
+import { useMessage } from '../../context/MessageContext';
+import { getError } from '../../services/ErrorService';
 
 /**
  * Renders the Report component.
@@ -28,10 +28,10 @@ function Report(): React.ReactNode {
   const [enableImport, setEnableImport] = useState<boolean>(false);
   const [jsonDataToDownload, setJsonDataToDownload] = useState<DailyReport[]>([]);
   const [filename, setFilename] = useState<string>('');
-  // const [thisMonthDocumentId, setThisMonthDocumentId] = useState<string>('');
   const [lastMonthAmountTxt, setLastMonthAmountTxt] = useState<string>('');
   const { theme } = useTheme();
   const { username } = useContext(AuthContext);
+  const { showMessage, hideMessage } = useMessage();
 
   /**
    * Loads the report for the current period.
@@ -55,79 +55,80 @@ function Report(): React.ReactNode {
       return;
     }
 
-    const monthYearKey = `${selectedYearId}/${selectedMonthId}`;
+    try {
+      showMessage('loading', 'Fetching data...');
 
-    // Get amount from last month
-    const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
-    const previousAmountObj: MonthAmount | null = await getMonthAmountForUserAndPeriod(username, lastPeriod);
+      const monthYearKey = `${selectedYearId}/${selectedMonthId}`;
 
-    if (previousAmountObj) {
-      const toDisplay = formatMinutes(previousAmountObj.amount);
-      setLastMonthAmountTxt(`Extra hours from last month: ${toDisplay}`);
-    }
+      // Get amount from last month
+      const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
+      const previousAmountObj: MonthAmount = await getMonthAmountForUserAndPeriod(username, lastPeriod);
+      let previousAmountMinutes = 0;
 
-    let previousAmountMinutes = previousAmountObj?.amount || 0;
-
-    // const datesToSearch = (selectedMonthId, selectedYearId);
-    const monthlyTracker = await getAllTimesForUserAndPeriod(username, monthYearKey);
-    const reportDataToSet: DailyReport[] = [];
-
-    monthlyTracker.forEach((theDay: TodayTrackerStore) => {
-      const totalWorked: number[] = calculateWorkedHours([
-        theDay.time1,
-        theDay.time2,
-        theDay.time3,
-        theDay.time4,
-        theDay.time5,
-        theDay.time6
-      ]);
-
-      if (totalWorked[0] >= 8) {
-        const hourToAdd = (totalWorked[0] - 8);
-        const minutesToAdd = totalWorked[1];
-
-        previousAmountMinutes += (hourToAdd * 60) + minutesToAdd;
-      }
-      else {
-        // find the time left
-        const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorked[1] + (totalWorked[0] * 60));
-        const minutesLeft = leftArray[1] + (leftArray[0] * 60);
-        previousAmountMinutes -= minutesLeft;
+      if ('amount' in previousAmountObj) {
+        previousAmountMinutes = previousAmountObj.amount || 0;
+        const toDisplay = formatMinutes(previousAmountObj.amount);
+        setLastMonthAmountTxt(`Extra hours from last month: ${toDisplay}`);
       }
 
-      // Total worked
-      const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
+      // const datesToSearch = (selectedMonthId, selectedYearId);
+      const monthlyTracker = await getAllTimesForUserAndPeriod(username, monthYearKey);
+      const reportDataToSet: DailyReport[] = [];
 
-      reportDataToSet.push({
-        dayOfMonth: theDay.day,
-        started1: theDay.time1,
-        stopped1: theDay.time2,
-        started2: theDay.time3,
-        stopped2: theDay.time4,
-        started3: theDay.time5,
-        stopped3: theDay.time6,
-        worked: totalWorkedText,
-        extra: formatMinutes(previousAmountMinutes)
+      monthlyTracker.forEach((theDay: TodayTrackerStore) => {
+        const totalWorked: number[] = calculateWorkedHours([
+          theDay.time1,
+          theDay.time2,
+          theDay.time3,
+          theDay.time4,
+          theDay.time5,
+          theDay.time6
+        ]);
+
+        if (totalWorked[0] >= 8) {
+          const hourToAdd = (totalWorked[0] - 8);
+          const minutesToAdd = totalWorked[1];
+
+          previousAmountMinutes += (hourToAdd * 60) + minutesToAdd;
+        }
+        else {
+          // find the time left
+          const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorked[1] + (totalWorked[0] * 60));
+          const minutesLeft = leftArray[1] + (leftArray[0] * 60);
+          previousAmountMinutes -= minutesLeft;
+        }
+
+        // Total worked
+        const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
+
+        reportDataToSet.push({
+          dayOfMonth: theDay.day,
+          started1: theDay.time1,
+          stopped1: theDay.time2,
+          started2: theDay.time3,
+          stopped2: theDay.time4,
+          started3: theDay.time5,
+          stopped3: theDay.time6,
+          worked: totalWorkedText,
+          extra: formatMinutes(previousAmountMinutes)
+        });
       });
-    });
 
-    // Display the data
-    if (reportDataToSet) {
-      setReportData(reportDataToSet);
+      // Display the data
+      if (reportDataToSet) {
+        setReportData(reportDataToSet);
+      }
+
+      // Check if should export data
+      if (enableExport && reportDataToSet) {
+        setJsonDataToDownload(reportDataToSet);
+        setFilename(`month${selectedMonthId}-year${selectedYearId}.json`);
+      }
+
+      hideMessage();
     }
-
-    // Save locally (localStorage) the final amount for the period
-    const periodAmount: PeriodAmount = {
-      period: `${selectedYearId}/${selectedMonthId}`,
-      amountOfMinutes: previousAmountMinutes
-    };
-
-    saveAmountForPeriod(periodAmount);
-
-    // Check if should export data
-    if (enableExport && reportDataToSet) {
-      setJsonDataToDownload(reportDataToSet);
-      setFilename(`month${selectedMonthId}-year${selectedYearId}.json`);
+    catch (error) {
+      showMessage('error', getError(error));
     }
   };
 

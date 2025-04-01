@@ -3,8 +3,9 @@ import { Alert, Form } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { AuthContext } from '../../context/authContext';
-import './style.css';
 import { useTheme } from '../../context/themeContext';
+import { useMessage } from '../../context/MessageContext';
+import './style.css';
 
 type Props = {
   show: boolean;
@@ -28,6 +29,7 @@ const UserModal: React.FC<Props> = (props: Props): React.ReactNode => {
   const [alreadyRegistered, setAlreadyRegistered] = useState<boolean>(true);
   const { signUp, signIn } = useContext(AuthContext);
   const { theme } = useTheme();
+  const { showMessage, hideMessage } = useMessage();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -44,16 +46,21 @@ const UserModal: React.FC<Props> = (props: Props): React.ReactNode => {
     setFormInvalid(false);
 
     if (alreadyRegistered) {
+      showMessage('loading', 'Signin you in...');
+
       const result = await signIn(email, password);
       if (result instanceof Error) {
         setFormInvalid(true);
         setErrorMessage(result.message);
       }
       else if (typeof result === 'boolean' && result === true) {
+        hideMessage();
         props.onHide();
       }
     }
     else {
+      showMessage('loading', 'Signin you up...');
+
       const result = await signUp(email, password);
       if (result instanceof Error) {
         setFormInvalid(true);
@@ -64,6 +71,7 @@ const UserModal: React.FC<Props> = (props: Props): React.ReactNode => {
         setEmail('');
         setPassword('');
         setAlreadyRegistered(true);
+        hideMessage();
         props.onHide();
       }
     }

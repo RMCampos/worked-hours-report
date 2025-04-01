@@ -1,4 +1,5 @@
 export type TodayTrackerStore = {
+  day: string;
   time1: string;
   time2: string;
   time3: string;
@@ -9,4 +10,5 @@ export type TodayTrackerStore = {
   willCompleteAt: string;
   timeLeft: string;
   extraHours: string;
+  documentId: string | null;
 };

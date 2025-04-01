@@ -1,22 +1,5 @@
-import { TodayTrackerStore } from '../types/todayTrackerStore';
 import { PeriodAmount } from '../types/periodAmount';
 import { TODAYS_TRACKER, CURRENT_THEME, PERIOD_AMOUNT } from './constants';
-
-function saveTodayTracker(obj: TodayTrackerStore, theDay: string): void {
-  localStorage.setItem(`${TODAYS_TRACKER}-${theDay}`, JSON.stringify(obj));
-}
-
-/**
- * Load saved data for a given date.
- * @param {string} theDay The day to be searched in the format Year/Month/Day
- * @returns {TodayTrackerStore | undefined} The data for the day, if found.
- */
-function loadTrackerForDate(theDay: string): TodayTrackerStore | undefined {
-  const saved: string | null = localStorage.getItem(`${TODAYS_TRACKER}-${theDay}`);
-  if (saved) {
-    return JSON.parse(saved);
-  }
-}
 
 /**
  * Save the amount of hours worked in a period.
@@ -56,9 +39,7 @@ function getTheme(): string | null {
 }
 
 export {
-  saveTodayTracker,
   clearStorage,
-  loadTrackerForDate,
   saveTheme,
   getTheme,
   saveAmountForPeriod,

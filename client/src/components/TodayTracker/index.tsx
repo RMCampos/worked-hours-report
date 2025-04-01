@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Button, Col, Form, Row } from 'react-bootstrap';
 import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
 import TodayInput from '../TodayInput';
@@ -8,12 +8,13 @@ import {
   getHourMinuteLeftArrayFromMinutes
 } from '../../hours-service';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { saveTodayTracker, loadTrackerForDate } from '../../storage-service/storage';
 import { getDayOfTheWeek, getDayExtension, getMonthName } from '../../date-service';
 import { useTheme } from '../../context/themeContext';
 import TodayTrackerResultText from '../TodayTrackerResultText';
 import { EMPTY_HOUR_MINUTE } from '../../constants/appDefinitions';
 import { DayDirection } from '../../enums/dayDirection';
+import { createTimeForUserAndDay, getTimesForUserAndDay, updateTimesForUserAndDay } from '../../storage-service/server';
+import { AuthContext } from '../../context/authContext';
 import './styles.css';
 
 function TodayTracker(): React.ReactNode {
@@ -30,7 +31,9 @@ function TodayTracker(): React.ReactNode {
   const [dateMessage, setDateMessage] = useState<string>('');
   const [currentDay, setCurrentDay] = useState<Date>(new Date());
   const [displayDaySummary, setDisplayDaySummary] = useState<boolean>(false);
+  const [documentId, setDocumentId] = useState<string>('');
   const { theme } = useTheme();
+  const { username } = useContext(AuthContext);
 
   /**
    * Handles the submit, after clicking 'Calculate and save' button.
@@ -89,7 +92,10 @@ function TodayTracker(): React.ReactNode {
     }
     setExtraHours(extraHoursText);
 
+    const formattedToSave = `${currentDay.getFullYear()}/${currentDay.getMonth()}/${currentDay.getDate()}`;
+
     const objToSave: TodayTrackerStore = {
+      day: formattedToSave,
       time1: timeOne,
       time2: timeTwo,
       time3: timeThree,
@@ -99,12 +105,31 @@ function TodayTracker(): React.ReactNode {
       totalWorkedHours: totalWorkedText,
       willCompleteAt: willCompleteAtText,
       timeLeft: timeLeftText,
-      extraHours: extraHoursText
+      extraHours: extraHoursText,
+      documentId: null
     };
 
-    const formattedToSave = `${currentDay.getFullYear()}/${currentDay.getMonth() + 1}/${currentDay.getDate()}`;
-    saveTodayTracker(objToSave, formattedToSave);
     setDisplayDaySummary(true);
+
+    if (!username) {
+      return;
+    }
+
+    if (objToSave.extraHours.startsWith('Extra:')) {
+      objToSave.extraHours = objToSave.extraHours.substring(7);
+    }
+
+    if (documentId) {
+      objToSave.documentId = documentId;
+      await updateTimesForUserAndDay(username, formattedToSave, objToSave);
+    }
+    else {
+      // create
+      const newId = await createTimeForUserAndDay(username, formattedToSave, objToSave);
+      if (newId) {
+        setDocumentId(newId);
+      }
+    }
   };
 
   /**
@@ -121,23 +146,22 @@ function TodayTracker(): React.ReactNode {
   };
 
   /**
-   * Load a given day from local storage.
+   * Load a given day from the server.
    *
-   * @param {string} theDay The day to be loaded.
+   * @param {TodayTrackerStore} store The data to be loaded.
    */
-  const loadFromStorage = (theDay: string): void => {
-    const data: TodayTrackerStore | undefined = loadTrackerForDate(theDay);
-    if (data) {
-      setTimeOne(data.time1);
-      setTimeTwo(data.time2);
-      setTimeThree(data.time3);
-      setTimeFour(data.time4);
-      setTimeFive(data.time5);
-      setTimeSix(data.time6);
-      setTotalWorkedHours(data.totalWorkedHours);
-      setWillCompleteAt(data.willCompleteAt);
-      setTimeLeft(data.timeLeft);
-      setExtraHours(data.extraHours);
+  const loadFromStorage = (store: TodayTrackerStore | null): void => {
+    if (store) {
+      setTimeOne(store.time1);
+      setTimeTwo(store.time2);
+      setTimeThree(store.time3);
+      setTimeFour(store.time4);
+      setTimeFive(store.time5);
+      setTimeSix(store.time6);
+      setTotalWorkedHours(store.totalWorkedHours);
+      setWillCompleteAt(store.willCompleteAt);
+      setTimeLeft(store.timeLeft);
+      setExtraHours(store.extraHours);
     }
     else {
       setTimeOne('');
@@ -197,15 +221,26 @@ function TodayTracker(): React.ReactNode {
   };
 
   useEffect(() => {
-    const formatted = `${currentDay.getFullYear()}/${currentDay.getMonth() + 1}/${currentDay.getDate()}`;
+    const formatted = `${currentDay.getFullYear()}/${currentDay.getMonth()}/${currentDay.getDate()}`;
 
-    loadFromStorage(formatted);
     loadTodayDateMessage(currentDay, formatted);
-  }, [currentDay]);
+    if (username) {
+      const load = async () => {
+        setDocumentId('');
+        const result: TodayTrackerStore | null = await getTimesForUserAndDay(username, formatted);
+        if (result && result.documentId) {
+          setDocumentId(result.documentId);
+        }
+        loadFromStorage(result);
+      };
+
+      load();
+    }
+  }, [currentDay, username]);
 
   return (
     <>
-      <div className={`card p-4 shadow-sm my-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
+      <div className={`card p-4 shadow-sm my-3 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
         <h1 className={`my-4 ${theme === 'light' ? 'text-dark' : 'text-light'}`}>WorkedHours</h1>
         <Row>
           <Col xs={12} md={6} className="text-center">

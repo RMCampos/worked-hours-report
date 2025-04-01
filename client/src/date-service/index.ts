@@ -73,24 +73,6 @@ export function getDaysInMonth(month: number): number {
 }
 
 /**
- * Create an array of days for the given month and year.
- * @param {number} month The month to be used.
- * @param {number} year The year to be used.
- * @returns {string[]} The array of days.
- */
-export function createDayArrayForMonthYear(month: number, year: number): string[] {
-  const monthArray: string[] = [];
-  const lastDay: number = getDaysInMonth(month);
-
-  for (let i = 1; i <= lastDay; i++) {
-    const todayFmt = `${year}/${month + 1}/${i}`;
-    monthArray.push(todayFmt);
-  }
-
-  return monthArray;
-}
-
-/**
  * Get the last period based on current month-1 and year.
  * @param {number} selectedMonthId The selected month id.
  * @param {number} selectedYearId The selected year id.

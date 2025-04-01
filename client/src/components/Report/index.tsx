@@ -1,16 +1,19 @@
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { Button, Col, Form, Row, Table } from 'react-bootstrap';
 import { months, years } from './data';
 import { IdAndValue } from '../../types/IdAndValue';
-import { createDayArrayForMonthYear, getLastPeriod } from '../../date-service';
+import { getLastPeriod } from '../../date-service';
 import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { loadAmountForPeriod, loadTrackerForDate, saveAmountForPeriod, saveTodayTracker } from '../../storage-service/storage';
+import { saveAmountForPeriod } from '../../storage-service/storage';
 import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
 import { PeriodAmount } from '../../types/periodAmount';
 import DownloadJsonButton from '../DownloadJsonButton';
 import JsonFileUploader from '../JsonFileUploader';
+import { AuthContext } from '../../context/authContext';
+import { getAllTimesForUserAndPeriod, getMonthAmountForUserAndPeriod } from '../../storage-service/server';
+import { MonthAmount } from '../../types/monthAmount';
 
 /**
  * Renders the Report component.
@@ -25,7 +28,10 @@ function Report(): React.ReactNode {
   const [enableImport, setEnableImport] = useState<boolean>(false);
   const [jsonDataToDownload, setJsonDataToDownload] = useState<DailyReport[]>([]);
   const [filename, setFilename] = useState<string>('');
+  // const [thisMonthDocumentId, setThisMonthDocumentId] = useState<string>('');
+  const [lastMonthAmountTxt, setLastMonthAmountTxt] = useState<string>('');
   const { theme } = useTheme();
+  const { username } = useContext(AuthContext);
 
   /**
    * Loads the report for the current period.
@@ -40,68 +46,78 @@ function Report(): React.ReactNode {
   /**
    * Loads the report for the selected period (month and year).
    */
-  const loadSelectedPeriod = (): void => {
+  const loadSelectedPeriod = async (): Promise<void> => {
     if (isNaN(selectedMonthId) || !selectedYearId) {
       return;
     }
 
-    const monthYearKey = `${selectedYearId}-${selectedMonthId}`;
-    console.log('load data for:', monthYearKey);
+    if (!username) {
+      return;
+    }
+
+    const monthYearKey = `${selectedYearId}/${selectedMonthId}`;
 
     // Get amount from last month
     const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
-    let previousAmountMinutes = loadAmountForPeriod(lastPeriod);
+    console.log('load amount for last:', lastPeriod);
+    const previousAmountObj: MonthAmount | null = await getMonthAmountForUserAndPeriod(username, lastPeriod);
 
-    const datesToSearch = createDayArrayForMonthYear(selectedMonthId, selectedYearId);
+    if (previousAmountObj) {
+      const toDisplay = formatMinutes(previousAmountObj.amount);
+      setLastMonthAmountTxt(`Extra hours from last month: ${toDisplay}`);
+    }
+
+    let previousAmountMinutes = previousAmountObj?.amount || 0;
+
+    // const datesToSearch = (selectedMonthId, selectedYearId);
+    const monthlyTracker = await getAllTimesForUserAndPeriod(username, monthYearKey);
     const reportDataToSet: DailyReport[] = [];
 
-    datesToSearch.forEach((theDay: string) => {
-      const reportForDate: TodayTrackerStore | undefined = loadTrackerForDate(theDay);
-      if (reportForDate) {
-        const totalWorked: number[] = calculateWorkedHours([
-          reportForDate.time1,
-          reportForDate.time2,
-          reportForDate.time3,
-          reportForDate.time4,
-          reportForDate.time5,
-          reportForDate.time6
-        ]);
+    monthlyTracker.forEach((theDay: TodayTrackerStore) => {
+      const totalWorked: number[] = calculateWorkedHours([
+        theDay.time1,
+        theDay.time2,
+        theDay.time3,
+        theDay.time4,
+        theDay.time5,
+        theDay.time6
+      ]);
 
-        if (totalWorked[0] >= 8) {
-          const hourToAdd = (totalWorked[0] - 8);
-          const minutesToAdd = totalWorked[1];
+      if (totalWorked[0] >= 8) {
+        const hourToAdd = (totalWorked[0] - 8);
+        const minutesToAdd = totalWorked[1];
 
-          previousAmountMinutes += (hourToAdd * 60) + minutesToAdd;
-        }
-        else {
-          // find the time left
-          const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorked[1] + (totalWorked[0] * 60));
-          const minutesLeft = leftArray[1] + (leftArray[0] * 60);
-          previousAmountMinutes -= minutesLeft;
-        }
-
-        // Total worked
-        const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
-
-        reportDataToSet.push({
-          dayOfMonth: theDay,
-          started1: reportForDate.time1,
-          stopped1: reportForDate.time2,
-          started2: reportForDate.time3,
-          stopped2: reportForDate.time4,
-          started3: reportForDate.time5,
-          stopped3: reportForDate.time6,
-          worked: totalWorkedText,
-          extra: formatMinutes(previousAmountMinutes)
-        });
+        previousAmountMinutes += (hourToAdd * 60) + minutesToAdd;
       }
+      else {
+        // find the time left
+        const leftArray = getHourMinuteLeftArrayFromMinutes(totalWorked[1] + (totalWorked[0] * 60));
+        const minutesLeft = leftArray[1] + (leftArray[0] * 60);
+        previousAmountMinutes -= minutesLeft;
+      }
+
+      // Total worked
+      const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
+
+      reportDataToSet.push({
+        dayOfMonth: theDay.day,
+        started1: theDay.time1,
+        stopped1: theDay.time2,
+        started2: theDay.time3,
+        stopped2: theDay.time4,
+        started3: theDay.time5,
+        stopped3: theDay.time6,
+        worked: totalWorkedText,
+        extra: formatMinutes(previousAmountMinutes)
+      });
     });
 
+    // Display the data
     if (reportDataToSet) {
       setReportData(reportDataToSet);
     }
 
-    // Save final amount for the period
+    // Save locally (localStorage) the final amount for the period
     const periodAmount: PeriodAmount = {
       period: `${selectedYearId}/${selectedMonthId}`,
       amountOfMinutes: previousAmountMinutes
@@ -138,6 +154,7 @@ function Report(): React.ReactNode {
       const jsonObj = jsonData[i];
       const { dayOfMonth } = jsonObj;
       const objToSave: TodayTrackerStore = {
+        day: dayOfMonth,
         time1: jsonObj.started1,
         time2: jsonObj.stopped1,
         time3: jsonObj.started2,
@@ -147,15 +164,21 @@ function Report(): React.ReactNode {
         totalWorkedHours: jsonObj.worked,
         willCompleteAt: '',
         timeLeft: '',
-        extraHours: jsonObj.extra
+        extraHours: jsonObj.extra,
+        documentId: null
       };
-      saveTodayTracker(objToSave, dayOfMonth);
+
+      // saveTodayTracker(objToSave, dayOfMonth);
+      console.log(objToSave);
+      // TODO: create a save all method
     }
   };
 
   useEffect(() => {
     loadSelectedPeriod();
   }, [selectedMonthId, selectedYearId, enableExport, enableImport]);
+
+  useEffect(() => {}, [lastMonthAmountTxt]);
 
   return (
     <div className={`card p-4 shadow-sm mb-4 ${theme === 'light' ? 'text-bg-light' : 'card-bg-dark'}`}>
@@ -221,6 +244,7 @@ function Report(): React.ReactNode {
 
       <Row>
         <Col xs={12} className="mt-3">
+          <small>{lastMonthAmountTxt}</small>
           <Table bordered hover>
             <thead>
               <tr className="sticky-top">

@@ -4,13 +4,13 @@
 Worked Hours is a simple app to track daily worked hours easily. It's a single page app containing a daily tracker section and a report section.
 ## Table of Content
 
-- [Features](#-features)
-- [Stack](#-Stack)
-- [Demo](#-demo)
-- [Running locally](#-Running-locally)
-- [License](#-License)
-- [Roadmap & Next Steps](#-Roadmap-next-steps)
-- [Authors](#-Authors)
+- [Features](#features)
+- [Stack](#stack)
+- [Demo](#demo)
+- [Running locally](#running-locally)
+- [License](#license)
+- [Roadmap & Next Steps](#roadmap--next-steps)
+- [Authors](#authors)
 ## Features
 
 - Track the amount of worked hours daily

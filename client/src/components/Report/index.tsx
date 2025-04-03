@@ -2,18 +2,18 @@ import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { Button, Col, Form, Row, Table } from 'react-bootstrap';
 import { months, years } from './data';
 import { IdAndValue } from '../../types/IdAndValue';
-import { getLastPeriod } from '../../date-service';
+import { getDayExtension, getDayOfTheWeek, getLastPeriod, getMonthName } from '../../date-service';
 import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
 import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
-import DownloadJsonButton from '../DownloadJsonButton';
-import JsonFileUploader from '../JsonFileUploader';
 import { AuthContext } from '../../context/authContext';
 import { getAllTimesForUserAndPeriod, getMonthAmountForUserAndPeriod } from '../../storage-service/server';
 import { MonthAmount } from '../../types/monthAmount';
 import { useMessage } from '../../context/MessageContext';
 import { getError } from '../../services/ErrorService';
+import DownloadJsonButton from '../DownloadJsonButton';
+import JsonFileUploader from '../JsonFileUploader';
 
 /**
  * Renders the Report component.
@@ -63,13 +63,10 @@ function Report(): React.ReactNode {
       // Get amount from last month
       const lastPeriod = getLastPeriod(selectedMonthId, selectedYearId);
       const previousAmountObj: MonthAmount = await getMonthAmountForUserAndPeriod(username, lastPeriod);
-      let previousAmountMinutes = 0;
+      let previousAmountMinutes = previousAmountObj.amount;
 
-      if ('amount' in previousAmountObj) {
-        previousAmountMinutes = previousAmountObj.amount || 0;
-        const toDisplay = formatMinutes(previousAmountObj.amount);
-        setLastMonthAmountTxt(`Extra hours from last month: ${toDisplay}`);
-      }
+      const toDisplay = formatMinutes(previousAmountObj.amount);
+      setLastMonthAmountTxt(`Extra hours from last month: ${toDisplay}`);
 
       // const datesToSearch = (selectedMonthId, selectedYearId);
       const monthlyTracker = await getAllTimesForUserAndPeriod(username, monthYearKey);
@@ -117,6 +114,9 @@ function Report(): React.ReactNode {
       // Display the data
       if (reportDataToSet) {
         setReportData(reportDataToSet);
+      }
+      else {
+        setReportData([]);
       }
 
       // Check if should export data
@@ -171,6 +171,26 @@ function Report(): React.ReactNode {
       console.debug(objToSave);
       // TODO: create a save all method
     }
+  };
+
+  const getDayText = (date: string): string => {
+    const parts: string[] = date.split('/');
+    const year: number = parseInt(parts[0]);
+    const month: number = parseInt(parts[1]);
+    const day: number = parseInt(parts[2]);
+    const theDay = new Date(year, month, day);
+
+    const dayParts: string[] = [];
+    dayParts.push(getDayOfTheWeek(theDay.getDay()));
+    dayParts.push(', ');
+    dayParts.push(getMonthName(theDay.getMonth()));
+    dayParts.push(' ');
+    dayParts.push(theDay.getDate().toString());
+    dayParts.push(getDayExtension(theDay.getDate()));
+    dayParts.push(', ');
+    dayParts.push(theDay.getFullYear().toString());
+
+    return dayParts.join('');
   };
 
   useEffect(() => {
@@ -243,7 +263,7 @@ function Report(): React.ReactNode {
 
       <Row>
         <Col xs={12} className="mt-3">
-          <small>{lastMonthAmountTxt}</small>
+          <small className={`${theme === 'light' ? 'text-dark' : 'text-light'}`}>{lastMonthAmountTxt}</small>
           <Table bordered hover>
             <thead>
               <tr className="sticky-top">
@@ -262,7 +282,7 @@ function Report(): React.ReactNode {
               {reportData.map((dailyItem: DailyReport) => (
                 <tr key={dailyItem.dayOfMonth}>
                   <td scope="row">
-                    {dailyItem.dayOfMonth}
+                    {getDayText(dailyItem.dayOfMonth)}
                   </td>
                   <td>
                     {dailyItem.started1}

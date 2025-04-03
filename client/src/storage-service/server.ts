@@ -377,8 +377,8 @@ const getAllTimesForUserAndPeriod = async (username: string, period: string): Pr
 
   try {
     const response = await promise;
+    const result: TodayTrackerStore[] = [];
     if (response.total > 0) {
-      const result: TodayTrackerStore[] = [];
       for (let i = 0; i < response.documents.length; i++) {
         result.push({
           day: response.documents[i].day,
@@ -395,8 +395,8 @@ const getAllTimesForUserAndPeriod = async (username: string, period: string): Pr
           documentId: response.documents[i].$id
         });
       }
-      return result;
     }
+    return result;
   }
   catch (error) {
     if (error instanceof Error) {

@@ -89,9 +89,9 @@ function TodayTracker(): React.ReactNode {
     setTimeLeft(timeLeftText);
 
     // Extra hours
-    let extraHoursText = `Extra: ${EMPTY_HOUR_MINUTE}`;
+    let extraHoursText = `${EMPTY_HOUR_MINUTE}`;
     if (totalWorked[0] >= 8 && totalWorked[1]) {
-      extraHoursText = `Extra: ${totalWorked[0] - 8}h ${totalWorked[1]}m`;
+      extraHoursText = `${totalWorked[0] - 8}h ${totalWorked[1]}m`;
     }
     setExtraHours(extraHoursText);
 
@@ -192,9 +192,8 @@ function TodayTracker(): React.ReactNode {
    * Loads the message for a given day.
    *
    * @param {Date} theDay the day to be loaded.
-   * @param {string} formatted the formatted day.
    */
-  const loadTodayDateMessage = (theDay: Date, formatted: string): void => {
+  const loadTodayDateMessage = (theDay: Date): void => {
     const parts: string[] = [];
     parts.push(getDayOfTheWeek(theDay.getDay()));
     parts.push(', ');
@@ -204,7 +203,6 @@ function TodayTracker(): React.ReactNode {
     parts.push(getDayExtension(theDay.getDate()));
     parts.push(', ');
     parts.push(theDay.getFullYear().toString());
-    parts.push(` (${formatted})`);
 
     const finalMessage = parts.join('');
     setDateMessage(finalMessage);
@@ -232,14 +230,13 @@ function TodayTracker(): React.ReactNode {
   };
 
   useEffect(() => {
-    const formatted = `${currentDay.getFullYear()}/${currentDay.getMonth()}/${currentDay.getDate()}`;
-
-    loadTodayDateMessage(currentDay, formatted);
+    loadTodayDateMessage(currentDay);
     if (username) {
       const load = async () => {
         try {
           setDocumentId('');
           showMessage('loading', 'Fetching data...');
+          const formatted = `${currentDay.getFullYear()}/${currentDay.getMonth()}/${currentDay.getDate()}`;
           const result: TodayTrackerStore = await getTimesForUserAndDay(username, formatted);
           if (result && result.documentId) {
             setDocumentId(result.documentId);

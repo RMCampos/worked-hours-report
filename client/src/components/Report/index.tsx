@@ -5,7 +5,7 @@ import { IdAndValue } from '../../types/IdAndValue';
 import { getDayExtension, getDayOfTheWeek, getLastPeriod, getMonthName } from '../../date-service';
 import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes } from '../../hours-service';
+import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes, parseTimeToPST } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
 import { AuthContext } from '../../context/authContext';
 import { getAllTimesForUserAndPeriod, getMonthAmountForUserAndPeriod } from '../../storage-service/server';
@@ -98,6 +98,10 @@ function Report(): React.ReactNode {
         // Total worked
         const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
 
+        // Report format
+        const lastStop = theDay.time6 === '' ? theDay.time4 : theDay.time6;
+        const reportFmt = `${parseTimeToPST(theDay.time1, 5)} - ${parseTimeToPST(lastStop, 5)} - PST`;
+
         reportDataToSet.push({
           dayOfMonth: theDay.day,
           started1: theDay.time1,
@@ -107,7 +111,8 @@ function Report(): React.ReactNode {
           started3: theDay.time5,
           stopped3: theDay.time6,
           worked: totalWorkedText,
-          extra: formatMinutes(previousAmountMinutes)
+          extra: formatMinutes(previousAmountMinutes),
+          report: reportFmt
         });
       });
 
@@ -276,6 +281,7 @@ function Report(): React.ReactNode {
                 <th scope="col">Stopped</th>
                 <th scope="col">Total</th>
                 <th scope="col">Extra (Sum)</th>
+                <th scope="col">Report</th>
               </tr>
             </thead>
             <tbody>
@@ -307,6 +313,9 @@ function Report(): React.ReactNode {
                   </td>
                   <td>
                     {dailyItem.extra}
+                  </td>
+                  <td>
+                    {dailyItem.report}
                   </td>
                 </tr>
               ))}

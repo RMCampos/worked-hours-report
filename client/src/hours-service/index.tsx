@@ -125,9 +125,27 @@ function formatMinutes(formatMinutes: number): string {
   return formatted;
 };
 
+/**
+ * Parse a time in the string format to a PST hour format.
+ *
+ * @param {string} time The original time.
+ * @param {number} hours The number of hours of difference.
+ * @returns {string} the parsed time.
+ */
+function parseTimeToPST(time: string, hours: number): string {
+  const newTime = time.split(':');
+  let newHour = parseInt(newTime[0]) - hours;
+  const amPm = newHour <= 11 ? 'AM' : 'PM';
+  if (amPm === 'PM') {
+    newHour -= 12;
+  }
+  return `${newHour}:${newTime[1]} ${amPm}`;
+}
+
 export {
   calculateWorkedHours,
   calculateCompletionTime,
   getHourMinuteLeftArrayFromMinutes,
-  formatMinutes
+  formatMinutes,
+  parseTimeToPST
 };

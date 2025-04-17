@@ -100,7 +100,7 @@ function Report(): React.ReactNode {
 
         // Report format
         const lastStop = theDay.time6 === '' ? theDay.time4 : theDay.time6;
-        const reportFmt = `${parseTimeToPST(theDay.time1, 5)} - ${parseTimeToPST(lastStop, 5)} - PST`;
+        const reportFmt = `${parseTimeToPST(theDay.time1, 4)} - ${parseTimeToPST(lastStop, 4)} - PST`;
 
         reportDataToSet.push({
           dayOfMonth: theDay.day,

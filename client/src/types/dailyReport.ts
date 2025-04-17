@@ -8,4 +8,5 @@ export type DailyReport = {
   stopped3: string;
   worked: string;
   extra: string;
+  report?: string;
 };

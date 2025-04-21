@@ -14,7 +14,7 @@
   "dependencies": {
     "@popperjs/core": "^2.11.8",
     "@vitejs/plugin-react": "^4.3.4",
-    "appwrite": "^17.0.1",
+    "appwrite": "^17.0.2",
     "bootstrap": "^5.3.3",
     "react": "^19.1.0",
     "react-bootstrap": "^2.10.9",

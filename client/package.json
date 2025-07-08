@@ -24,7 +24,7 @@
     "vite": "^6.3.5"
   },
   "scripts": {
-    "start": "vite --host",
+    "dev": "vite --host",
     "build": "tsc && vite build",
     "preview": "vite build && vite preview",
     "test": "vitest",

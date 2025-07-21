@@ -21,7 +21,7 @@
     "react-bootstrap-icons": "^1.11.6",
     "react-dom": "^19.1.0",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5"
+    "vite": "^7.0.5"
   },
   "scripts": {
     "dev": "vite --host",

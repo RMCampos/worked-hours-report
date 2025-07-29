@@ -26,14 +26,12 @@ function validateCollections(): boolean {
 }
 
 function getValue(key: ProjectKey): string {
-  console.debug(`Get key value: key=${key}`);
   const keys: string[] = Object.keys(PROJECT_KEYS);
   if (keys.includes(key)) {
     let value = PROJECT_KEYS[key];
     if (value.startsWith('VITE_')) {
       value = import.meta.env[PROJECT_KEYS[key]];
     }
-    console.debug(`Found! key=${key} value=${value}`);
     return value;
   }
   return '';

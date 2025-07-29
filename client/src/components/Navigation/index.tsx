@@ -33,14 +33,16 @@ function Navigation() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary justify-content-between" bg={theme} data-bs-theme={theme}>
       <Container>
-        <Navbar.Brand href="#">Worked Hours</Navbar.Brand>
+        <Navbar.Brand href="/">Worked Hours</Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
           {signed && (
             <Navbar.Text>
               Signed in as:
               {' '}
-              <a href="#" title="Logout" onClick={signOutFn}>{username}</a>
+              <b>{username}</b>
+              {' '}
+              <a href="#" title="Logout" onClick={signOutFn}>SignOut</a>
             </Navbar.Text>
           )}
 

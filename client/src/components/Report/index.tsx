@@ -99,7 +99,22 @@ function Report(): React.ReactNode {
         const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
 
         // Report format
-        const lastStop = theDay.time6 === '' ? theDay.time4 : theDay.time6;
+        let lastStop = theDay.time1;
+        if (theDay.time6) {
+          lastStop = theDay.time6;
+        }
+        else if (theDay.time5) {
+          lastStop = theDay.time5;
+        }
+        else if (theDay.time4) {
+          lastStop = theDay.time4;
+        }
+        else if (theDay.time3) {
+          lastStop = theDay.time3;
+        }
+        else if (theDay.time2) {
+          lastStop = theDay.time2;
+        }
         const reportFmt = `${parseTimeToPST(theDay.time1, 4)} - ${parseTimeToPST(lastStop, 4)} - PST`;
 
         reportDataToSet.push({

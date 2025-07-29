@@ -9,7 +9,7 @@ import './styles/custom.scss';
 
 /**
  * The main application component that sets up routing based on the
- * user's authentication status.
+ * user's authentication status. This is the App component.
  *
  * @component
  * @returns {React.ReactNode} The rendered component.

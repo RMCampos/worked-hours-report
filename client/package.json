@@ -13,7 +13,7 @@
   "private": true,
   "dependencies": {
     "@popperjs/core": "^2.11.8",
-    "@vitejs/plugin-react": "^5.0.2",
+    "@vitejs/plugin-react": "^5.0.3",
     "appwrite": "^20.0.0",
     "bootstrap": "^5.3.8",
     "react": "^19.1.1",
@@ -56,14 +56,14 @@
     "@eslint/js": "^9.35.0",
     "@stylistic/eslint-plugin": "^5.3.1",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^24.4.0",
+    "@types/node": "^24.5.1",
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-jsdoc": "^57.0.8",
-    "eslint-plugin-n": "^17.22.0",
+    "eslint-plugin-jsdoc": "^58.1.1",
+    "eslint-plugin-n": "^17.23.0",
     "eslint-plugin-promise": "^7.2.1",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.4.0",
@@ -71,6 +71,6 @@
     "prettier": "^3.6.2",
     "sass": "^1.92.1",
     "source-map-support": "^0.5.21",
-    "typescript-eslint": "^8.43.0"
+    "typescript-eslint": "^8.44.0"
   }
 }

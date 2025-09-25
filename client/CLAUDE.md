@@ -36,8 +36,8 @@ This is a React-based worked hours tracking application (TaskNote App) that allo
 - `DarkButton` - Theme toggle functionality
 
 ### Data Models
-- `DailyReport` - Structure for daily work reports with multiple time periods
-- `TodayTrackerStore` - State structure for current day tracking (6 time slots)
+- `DailyReport` - Structure for daily work reports with multiple time periods and break time
+- `TodayTrackerStore` - State structure for current day tracking (6 time slots + break time)
 - `MonthAmount` - Monthly hours/minutes aggregation
 
 ### Storage Service

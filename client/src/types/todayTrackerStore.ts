@@ -7,6 +7,7 @@ export type TodayTrackerStore = {
   time5: string;
   time6: string;
   totalWorkedHours: string;
+  totalBreakTime: string;
   willCompleteAt: string;
   timeLeft: string;
   extraHours: string;

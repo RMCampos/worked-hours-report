@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Col, Form, Row } from 'react-bootstrap';
-import { ArrowLeft, ArrowRight } from 'react-bootstrap-icons';
-import TodayInput from '../TodayInput';
+import { Button, Col, Row, Card } from 'react-bootstrap';
+import { ArrowLeft, ArrowRight, Play, Stop, Clock } from 'react-bootstrap-icons';
 import {
   calculateWorkedHours,
   calculateCompletionTime,
+  calculateBreakTime,
   getHourMinuteLeftArrayFromMinutes
 } from '../../hours-service';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
@@ -19,6 +19,13 @@ import { useMessage } from '../../context/MessageContext';
 import { getError } from '../../services/ErrorService';
 import './styles.css';
 
+enum WorkState {
+  NOT_STARTED = 'not_started',
+  WORKING = 'working',
+  ON_BREAK = 'on_break',
+  COMPLETED = 'completed'
+}
+
 function TodayTracker(): React.ReactNode {
   const [timeOne, setTimeOne] = useState<string>('');
   const [timeTwo, setTimeTwo] = useState<string>('');
@@ -26,7 +33,9 @@ function TodayTracker(): React.ReactNode {
   const [timeFour, setTimeFour] = useState<string>('');
   const [timeFive, setTimeFive] = useState<string>('');
   const [timeSix, setTimeSix] = useState<string>('');
+  const [workState, setWorkState] = useState<WorkState>(WorkState.NOT_STARTED);
   const [totalWorkedHours, setTotalWorkedHours] = useState<string>(EMPTY_HOUR_MINUTE);
+  const [totalBreakTime, setTotalBreakTime] = useState<string>(EMPTY_HOUR_MINUTE);
   const [willCompleteAt, setWillCompleteAt] = useState<string>('00:00');
   const [timeLeft, setTimeLeft] = useState<string>(EMPTY_HOUR_MINUTE);
   const [extraHours, setExtraHours] = useState<string>(EMPTY_HOUR_MINUTE);
@@ -39,38 +48,90 @@ function TodayTracker(): React.ReactNode {
   const { showMessage, hideMessage } = useMessage();
 
   /**
-   * Handles the submit, after clicking 'Calculate and save' button.
-   * @param {React.FormEvent<HTMLFormElement>} event The form submit event.
+   * Gets current time as HH:MM string
    */
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
-    event.preventDefault();
-    event.stopPropagation();
+  const getCurrentTime = (): string => {
+    const date = new Date();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
 
+  /**
+   * Determines the current work state based on filled time slots
+   */
+  const determineWorkState = (): WorkState => {
+    if (!timeOne) return WorkState.NOT_STARTED;
+    if (!timeTwo) return WorkState.WORKING;
+    if (!timeThree) return WorkState.ON_BREAK;
+    if (!timeFour) return WorkState.WORKING;
+    if (!timeFive) return WorkState.ON_BREAK;
+    if (!timeSix) return WorkState.WORKING;
+    return WorkState.COMPLETED;
+  };
+
+  /**
+   * Handles the main clock button click
+   */
+  const handleClockButtonClick = (): void => {
+    const currentTime = getCurrentTime();
+    const state = determineWorkState();
+
+    switch (state) {
+      case WorkState.NOT_STARTED:
+        setTimeOne(currentTime);
+        setWorkState(WorkState.WORKING);
+        break;
+      case WorkState.WORKING:
+        if (!timeTwo) {
+          setTimeTwo(currentTime);
+          setWorkState(WorkState.ON_BREAK);
+        }
+        else if (!timeFour) {
+          setTimeFour(currentTime);
+          setWorkState(WorkState.ON_BREAK);
+        }
+        else if (!timeSix) {
+          setTimeSix(currentTime);
+          setWorkState(WorkState.COMPLETED);
+          calculateAndSave();
+        }
+        break;
+      case WorkState.ON_BREAK:
+        if (!timeThree) {
+          setTimeThree(currentTime);
+          setWorkState(WorkState.WORKING);
+        }
+        else if (!timeFive) {
+          setTimeFive(currentTime);
+          setWorkState(WorkState.WORKING);
+        }
+        break;
+    }
+  };
+
+  /**
+   * Calculates and saves the work data
+   */
+  const calculateAndSave = async (): Promise<void> => {
     const timeValues: string[] = [];
-    if (timeOne.length) {
-      timeValues.push(timeOne);
-    }
-    if (timeTwo.length) {
-      timeValues.push(timeTwo);
-    }
-    if (timeThree.length) {
-      timeValues.push(timeThree);
-    }
-    if (timeFour.length) {
-      timeValues.push(timeFour);
-    }
-    if (timeFive.length) {
-      timeValues.push(timeFive);
-    }
-    if (timeSix.length) {
-      timeValues.push(timeSix);
-    }
+    if (timeOne.length) timeValues.push(timeOne);
+    if (timeTwo.length) timeValues.push(timeTwo);
+    if (timeThree.length) timeValues.push(timeThree);
+    if (timeFour.length) timeValues.push(timeFour);
+    if (timeFive.length) timeValues.push(timeFive);
+    if (timeSix.length) timeValues.push(timeSix);
 
     const totalWorked: number[] = calculateWorkedHours(timeValues);
 
     // Total worked
     const totalWorkedText = `${totalWorked[0]}h ${totalWorked[1]}m`;
     setTotalWorkedHours(totalWorkedText);
+
+    // Total break time
+    const totalBreak: number[] = calculateBreakTime(timeValues);
+    const totalBreakText = `${totalBreak[0]}h ${totalBreak[1]}m`;
+    setTotalBreakTime(totalBreakText);
 
     // Completion time
     const completionTimeArray = calculateCompletionTime(totalWorked);
@@ -106,6 +167,7 @@ function TodayTracker(): React.ReactNode {
       time5: timeFive,
       time6: timeSix,
       totalWorkedHours: totalWorkedText,
+      totalBreakTime: totalBreakText,
       willCompleteAt: willCompleteAtText,
       timeLeft: timeLeftText,
       extraHours: extraHoursText,
@@ -144,7 +206,7 @@ function TodayTracker(): React.ReactNode {
   };
 
   /**
-   * Clears all the input fields.
+   * Clears all the input fields and resets work state.
    */
   const clearInputs = (): void => {
     setTimeOne('');
@@ -153,7 +215,50 @@ function TodayTracker(): React.ReactNode {
     setTimeFour('');
     setTimeFive('');
     setTimeSix('');
+    setWorkState(WorkState.NOT_STARTED);
+    setTotalBreakTime(EMPTY_HOUR_MINUTE);
     setDisplayDaySummary(false);
+  };
+
+  /**
+   * Gets the button text based on current work state
+   */
+  const getButtonText = (): string => {
+    const state = determineWorkState();
+    switch (state) {
+      case WorkState.NOT_STARTED:
+        return 'Start Working';
+      case WorkState.WORKING:
+        if (!timeTwo) return 'Take Break';
+        if (!timeFour) return 'Take Break';
+        if (!timeSix) return 'Stop Working';
+        return 'Working...';
+      case WorkState.ON_BREAK:
+        return 'Resume Working';
+      case WorkState.COMPLETED:
+        return 'Day Completed';
+      default:
+        return 'Start Working';
+    }
+  };
+
+  /**
+   * Gets the button icon based on current work state
+   */
+  const getButtonIcon = (): React.ReactNode => {
+    const state = determineWorkState();
+    switch (state) {
+      case WorkState.NOT_STARTED:
+        return <Play size={24} />;
+      case WorkState.WORKING:
+        return <Stop size={24} />;
+      case WorkState.ON_BREAK:
+        return <Play size={24} />;
+      case WorkState.COMPLETED:
+        return <Clock size={24} />;
+      default:
+        return <Play size={24} />;
+    }
   };
 
   /**
@@ -170,6 +275,7 @@ function TodayTracker(): React.ReactNode {
       setTimeFive(store.time5);
       setTimeSix(store.time6);
       setTotalWorkedHours(store.totalWorkedHours);
+      setTotalBreakTime(store.totalBreakTime || EMPTY_HOUR_MINUTE);
       setWillCompleteAt(store.willCompleteAt);
       setTimeLeft(store.timeLeft);
       setExtraHours(store.extraHours);
@@ -182,6 +288,7 @@ function TodayTracker(): React.ReactNode {
       setTimeFive('');
       setTimeSix('');
       setTotalWorkedHours('');
+      setTotalBreakTime('');
       setWillCompleteAt('');
       setTimeLeft('');
       setExtraHours('');
@@ -230,6 +337,20 @@ function TodayTracker(): React.ReactNode {
   };
 
   useEffect(() => {
+    setWorkState(determineWorkState());
+  }, [timeOne, timeTwo, timeThree, timeFour, timeFive, timeSix]);
+
+  useEffect(() => {
+    if (workState === WorkState.WORKING || workState === WorkState.ON_BREAK) {
+      const interval = setInterval(() => {
+        calculateAndSave();
+      }, 30000); // Auto-save every 30 seconds while working
+
+      return () => clearInterval(interval);
+    }
+  }, [workState, timeOne, timeTwo, timeThree, timeFour, timeFive, timeSix]);
+
+  useEffect(() => {
     loadTodayDateMessage(currentDay);
     if (username) {
       const load = async () => {
@@ -242,6 +363,13 @@ function TodayTracker(): React.ReactNode {
             setDocumentId(result.documentId);
           }
           loadFromStorage(result);
+          // Recalculate break time when loading from storage
+          if (result && (result.time2 || result.time3 || result.time4 || result.time5)) {
+            const timeValues: string[] = [result.time1, result.time2, result.time3, result.time4, result.time5, result.time6].filter(Boolean);
+            const totalBreak: number[] = calculateBreakTime(timeValues);
+            const totalBreakText = `${totalBreak[0]}h ${totalBreak[1]}m`;
+            setTotalBreakTime(totalBreakText);
+          }
           hideMessage();
         }
         catch (error) {
@@ -293,85 +421,83 @@ function TodayTracker(): React.ReactNode {
           </Col>
         </Row>
 
-        <Form noValidate validated={true} onSubmit={handleSubmit} className="mt-4">
-          <Row>
-            <Col xs={12} md={6}>
-              <TodayInput
-                inputId="time1"
-                labelText="Starting time"
-                helpText="What time did you start working?"
-                globalValue={timeOne}
-                setGlobalValue={setTimeOne}
-              />
-            </Col>
-            <Col xs={12} md={6}>
-              <TodayInput
-                inputId="time2"
-                labelText="Stopped for lunch - Lunchtime"
-                helpText="What time did you stop for lunch?"
-                globalValue={timeTwo}
-                setGlobalValue={setTimeTwo}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xs={12} md={6}>
-              <TodayInput
-                inputId="time3"
-                labelText="Started after lunch"
-                helpText="What time did you start after lunch?"
-                globalValue={timeThree}
-                setGlobalValue={setTimeThree}
-              />
-            </Col>
-            <Col xs={12} md={6}>
-              <TodayInput
-                inputId="time4"
-                labelText="Stopped? Quick Break?"
-                helpText="What time did you stop working? Went for a break?"
-                globalValue={timeFour}
-                setGlobalValue={setTimeFour}
-              />
-            </Col>
-          </Row>
-          <Row>
-            <Col xs={12} md={6}>
-              <TodayInput
-                inputId="time5"
-                labelText="Joined again?"
-                helpText="What time did you join again?"
-                globalValue={timeFive}
-                setGlobalValue={setTimeFive}
-              />
-            </Col>
-            <Col xs={12} md={6}>
-              <TodayInput
-                inputId="time6"
-                labelText="Final stop!"
-                helpText="What time did you finally stop?"
-                globalValue={timeSix}
-                setGlobalValue={setTimeSix}
-              />
-            </Col>
-          </Row>
+        {/* Main Clock Button */}
+        <div className="text-center my-5">
+          <Card
+            className={`clock-button-card mx-auto ${theme === 'light' ? 'text-bg-light border-primary' : 'card-bg-dark border-secondary'}`}
+            style={{ maxWidth: '400px', cursor: determineWorkState() !== WorkState.COMPLETED ? 'pointer' : 'default' }}
+            onClick={determineWorkState() !== WorkState.COMPLETED ? handleClockButtonClick : undefined}
+          >
+            <Card.Body className="p-5 text-center">
+              <div className="mb-3">
+                {getButtonIcon()}
+              </div>
+              <h3 className={`mb-2 ${theme === 'light' ? 'text-dark' : 'text-light'}`}>
+                {getButtonText()}
+              </h3>
+              <p className={`mb-0 ${theme === 'light' ? 'text-muted' : 'text-light-muted'}`}>
+                {getCurrentTime()}
+              </p>
+            </Card.Body>
+          </Card>
+        </div>
 
-          <div className="text-end">
-            <Button
-              variant="primary"
-              type="submit"
-            >
-              Calculate and save
-            </Button>
-            <Button
-              variant="outline-secondary"
-              type="button"
-              onClick={clearInputs}
-              className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
-            >
-              Clear form
-            </Button>
-          </div>
-        </Form>
+        {/* Time Log Display */}
+        {(timeOne || timeTwo || timeThree || timeFour || timeFive || timeSix) && (
+          <Row className="mt-4">
+            <Col xs={12}>
+              <h5 className={`mb-3 ${theme === 'light' ? 'text-dark' : 'text-light'}`}>Today&apos;s Time Log</h5>
+            </Col>
+            {timeOne && (
+              <Col xs={6} md={4} className="mb-2">
+                <small className={`${theme === 'light' ? 'text-muted' : 'text-light-muted'}`}>Started:</small>
+                <div className={`fw-bold ${theme === 'light' ? 'text-dark' : 'text-light'}`}>{timeOne}</div>
+              </Col>
+            )}
+            {timeTwo && (
+              <Col xs={6} md={4} className="mb-2">
+                <small className={`${theme === 'light' ? 'text-muted' : 'text-light-muted'}`}>Break started:</small>
+                <div className={`fw-bold ${theme === 'light' ? 'text-dark' : 'text-light'}`}>{timeTwo}</div>
+              </Col>
+            )}
+            {timeThree && (
+              <Col xs={6} md={4} className="mb-2">
+                <small className={`${theme === 'light' ? 'text-muted' : 'text-light-muted'}`}>Resumed:</small>
+                <div className={`fw-bold ${theme === 'light' ? 'text-dark' : 'text-light'}`}>{timeThree}</div>
+              </Col>
+            )}
+            {timeFour && (
+              <Col xs={6} md={4} className="mb-2">
+                <small className={`${theme === 'light' ? 'text-muted' : 'text-light-muted'}`}>Break started:</small>
+                <div className={`fw-bold ${theme === 'light' ? 'text-dark' : 'text-light'}`}>{timeFour}</div>
+              </Col>
+            )}
+            {timeFive && (
+              <Col xs={6} md={4} className="mb-2">
+                <small className={`${theme === 'light' ? 'text-muted' : 'text-light-muted'}`}>Resumed:</small>
+                <div className={`fw-bold ${theme === 'light' ? 'text-dark' : 'text-light'}`}>{timeFive}</div>
+              </Col>
+            )}
+            {timeSix && (
+              <Col xs={6} md={4} className="mb-2">
+                <small className={`${theme === 'light' ? 'text-muted' : 'text-light-muted'}`}>Finished:</small>
+                <div className={`fw-bold ${theme === 'light' ? 'text-dark' : 'text-light'}`}>{timeSix}</div>
+              </Col>
+            )}
+          </Row>
+        )}
+
+        {/* Action Buttons */}
+        <div className="text-end mt-4">
+          <Button
+            variant="outline-secondary"
+            type="button"
+            onClick={clearInputs}
+            className={`mx-2 ${theme === 'dark' ? 'btn-lighter' : 'btn-darker'}`}
+          >
+            Reset Day
+          </Button>
+        </div>
       </div>
 
       {displayDaySummary && (
@@ -395,6 +521,10 @@ function TodayTracker(): React.ReactNode {
               <TodayTrackerResultText
                 label="Extra"
                 value={extraHours}
+              />
+              <TodayTrackerResultText
+                label="Break time"
+                value={totalBreakTime}
               />
             </Col>
           </Row>

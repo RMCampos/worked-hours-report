@@ -229,6 +229,7 @@ const getTimesForUserAndDay = async (username: string, day: string): Promise<Tod
       time5: '',
       time6: '',
       totalWorkedHours: '',
+      totalBreakTime: '',
       willCompleteAt: '',
       timeLeft: '',
       extraHours: '',
@@ -246,6 +247,7 @@ const getTimesForUserAndDay = async (username: string, day: string): Promise<Tod
       tracker.time5 = document.time5 || '';
       tracker.time6 = document.time6 || '';
       tracker.totalWorkedHours = document.totalWorkedHours || '';
+      tracker.totalBreakTime = document.totalBreakTime || '';
       tracker.willCompleteAt = document.willCompleteAt || '';
       tracker.timeLeft = document.timeLeft || '';
       tracker.extraHours = document.extraHours || '';
@@ -288,6 +290,7 @@ const createTimeForUserAndDay = async (username: string, day: string, tracker: T
       time5: tracker.time5,
       time6: tracker.time6,
       totalWorkedHours: tracker.totalWorkedHours,
+      totalBreakTime: tracker.totalBreakTime,
       willCompleteAt: tracker.willCompleteAt,
       timeLeft: tracker.timeLeft,
       extraHours: tracker.extraHours
@@ -335,6 +338,7 @@ const updateTimesForUserAndDay = async (username: string, day: string, tracker: 
       time5: tracker.time5,
       time6: tracker.time6,
       totalWorkedHours: tracker.totalWorkedHours,
+      totalBreakTime: tracker.totalBreakTime,
       willCompleteAt: tracker.willCompleteAt,
       timeLeft: tracker.timeLeft,
       extraHours: tracker.extraHours
@@ -387,6 +391,7 @@ const getAllTimesForUserAndPeriod = async (username: string, period: string): Pr
           time5: response.documents[i].time5 || '',
           time6: response.documents[i].time6 || '',
           totalWorkedHours: response.documents[i].totalWorkedHours || '',
+          totalBreakTime: response.documents[i].totalBreakTime || '',
           willCompleteAt: response.documents[i].willCompleteAt || '',
           timeLeft: response.documents[i].timeLeft || '',
           extraHours: response.documents[i].extraHours || '',

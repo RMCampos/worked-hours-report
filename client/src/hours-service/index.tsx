@@ -126,6 +126,47 @@ function formatMinutes(formatMinutes: number): string {
 };
 
 /**
+ * Calculate total break time from the time values.
+ * Break periods: Time2-Time3 and Time4-Time5
+ * @param {string[]} values The time values [time1, time2, time3, time4, time5, time6].
+ * @returns {number[]} The total break hours and minutes.
+ */
+function calculateBreakTime(values: string[]): number[] {
+  let totalBreakHours = 0;
+  let totalBreakMinutes = 0;
+
+  // First break: Time2 to Time3
+  if (values.length >= 3 && values[1] && values[2]) {
+    const breakStart = getParsedTime(values[1]);
+    const breakEnd = getParsedTime(values[2]);
+    if (breakEnd[0] > 0 || breakEnd[1] > 0) {
+      const breakDuration = sumTimes(breakStart, breakEnd);
+      totalBreakHours += breakDuration[0];
+      totalBreakMinutes += breakDuration[1];
+    }
+  }
+
+  // Second break: Time4 to Time5
+  if (values.length >= 5 && values[3] && values[4]) {
+    const breakStart = getParsedTime(values[3]);
+    const breakEnd = getParsedTime(values[4]);
+    if (breakEnd[0] > 0 || breakEnd[1] > 0) {
+      const breakDuration = sumTimes(breakStart, breakEnd);
+      totalBreakHours += breakDuration[0];
+      totalBreakMinutes += breakDuration[1];
+    }
+  }
+
+  // Normalize minutes to hours
+  if (totalBreakMinutes >= 60) {
+    totalBreakHours += Math.floor(totalBreakMinutes / 60);
+    totalBreakMinutes = totalBreakMinutes % 60;
+  }
+
+  return [totalBreakHours, totalBreakMinutes];
+}
+
+/**
  * Parse a time in the string format to a PST hour format.
  *
  * @param {string} time The original time.
@@ -145,6 +186,7 @@ function parseTimeToPST(time: string, hours: number): string {
 export {
   calculateWorkedHours,
   calculateCompletionTime,
+  calculateBreakTime,
   getHourMinuteLeftArrayFromMinutes,
   formatMinutes,
   parseTimeToPST

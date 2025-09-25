@@ -7,6 +7,7 @@ export type DailyReport = {
   started3: string;
   stopped3: string;
   worked: string;
+  breakTime: string;
   extra: string;
   report?: string;
 };

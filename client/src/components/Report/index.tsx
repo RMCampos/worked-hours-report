@@ -5,7 +5,7 @@ import { IdAndValue } from '../../types/IdAndValue';
 import { getDayExtension, getDayOfTheWeek, getLastPeriod, getMonthName } from '../../date-service';
 import { DailyReport } from '../../types/dailyReport';
 import { TodayTrackerStore } from '../../types/todayTrackerStore';
-import { calculateWorkedHours, formatMinutes, getHourMinuteLeftArrayFromMinutes, parseTimeToPST } from '../../hours-service';
+import { calculateWorkedHours, calculateBreakTime, formatMinutes, getHourMinuteLeftArrayFromMinutes, parseTimeToPST } from '../../hours-service';
 import { useTheme } from '../../context/themeContext';
 import { AuthContext } from '../../context/authContext';
 import { getAllTimesForUserAndPeriod, getMonthAmountForUserAndPeriod } from '../../storage-service/server';
@@ -117,6 +117,11 @@ function Report(): React.ReactNode {
         }
         const reportFmt = `${parseTimeToPST(theDay.time1, 4)} - ${parseTimeToPST(lastStop, 4)} - PST`;
 
+        // Calculate break time for this day
+        const timeValues: string[] = [theDay.time1, theDay.time2, theDay.time3, theDay.time4, theDay.time5, theDay.time6].filter(Boolean);
+        const breakTime: number[] = calculateBreakTime(timeValues);
+        const breakTimeText = `${breakTime[0]}h ${breakTime[1]}m`;
+
         reportDataToSet.push({
           dayOfMonth: theDay.day,
           started1: theDay.time1,
@@ -126,6 +131,7 @@ function Report(): React.ReactNode {
           started3: theDay.time5,
           stopped3: theDay.time6,
           worked: totalWorkedText,
+          breakTime: breakTimeText,
           extra: formatMinutes(previousAmountMinutes),
           report: reportFmt
         });
@@ -182,6 +188,7 @@ function Report(): React.ReactNode {
         time5: jsonObj.started3,
         time6: jsonObj.stopped3,
         totalWorkedHours: jsonObj.worked,
+        totalBreakTime: jsonObj.breakTime || '0h 0m',
         willCompleteAt: '',
         timeLeft: '',
         extraHours: jsonObj.extra,

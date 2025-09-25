@@ -9,3 +9,25 @@
     font-size: 16px;
   }
 }
+
+.clock-button-card {
+  transition: all 0.3s ease;
+  border: 2px solid;
+}
+
+.clock-button-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.clock-button-card:active {
+  transform: translateY(0);
+}
+
+.clock-button-card .card-body {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
